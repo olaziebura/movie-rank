@@ -21,8 +21,6 @@ export async function tmdbFetch(
   endpoint: string,
   params: Record<string, unknown> = {}
 ): Promise<unknown> {
-  const startTime = Date.now();
-
   try {
     // Construct the URL
     const url = new URL(`${BASE_URL}${endpoint}`);

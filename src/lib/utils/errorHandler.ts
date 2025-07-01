@@ -168,7 +168,7 @@ export class ErrorFactory {
 
 // Error handling utility for API routes
 export class ApiErrorHandler {
-  static handle(error: unknown, context?: string): NextResponse {
+  static handle(error: unknown): NextResponse {
     if (error instanceof MovieRankError) {
       return NextResponse.json(
         {
@@ -221,9 +221,7 @@ export class ApiErrorHandler {
 
 // Service error handling utilities
 export class ServiceErrorHandler {
-  static async withErrorHandling<T>(
-    operation: () => Promise<T>,
-  ): Promise<T> {
+  static async withErrorHandling<T>(operation: () => Promise<T>): Promise<T> {
     try {
       const result = await operation();
       return result;
@@ -386,9 +384,7 @@ export async function withErrorHandling<T>(
   }
 ): Promise<T> {
   try {
-    return await ServiceErrorHandler.withErrorHandling(
-      operation,
-    );
+    return await ServiceErrorHandler.withErrorHandling(operation);
   } catch (error) {
     switch (errorContext.type) {
       case "database":
