@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>AI Chat Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background: #111;
+        color: white;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 10px;
+        background: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      #result {
+        margin-top: 20px;
+        padding: 15px;
+        background: #222;
+        border-radius: 5px;
+      }
+      .error {
+        background: #dc3545;
+      }
+      .success {
+        background: #28a745;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>AI Chat API Test</h1>
+    <button onclick="testAPI()">Test AI Recommendations</button>
+    <div id="result"></div>
+
+    <script>
+      async function testAPI() {
+        const resultDiv = document.getElementById("result");
+        resultDiv.innerHTML = "<p>Testing API...</p>";
+
+        try {
+          const response = await fetch("/api/movies/recommendations", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              customPrompt: "I want a funny action movie",
+              userPreferences: {
+                minRating: 6.0,
+              },
+              maxMovies: 2,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            const recommendations =
+              data.data?.recommendations || data.recommendations;
+            resultDiv.className = "success";
+            resultDiv.innerHTML = `
+                        <h3>✅ API Success!</h3>
+                        <p><strong>Found:</strong> ${
+                          recommendations?.length || 0
+                        } recommendations</p>
+                        <p><strong>Data structure:</strong></p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+          } else {
+            resultDiv.className = "error";
+            resultDiv.innerHTML = `
+                        <h3>❌ API Error</h3>
+                        <p>${data.error || "Unknown error"}</p>
+                    `;
+          }
+        } catch (error) {
+          resultDiv.className = "error";
+          resultDiv.innerHTML = `
+                    <h3>❌ Network Error</h3>
+                    <p>${error.message}</p>
+                `;
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wishlist Duplicate Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        .container {
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .cleanup-btn {
+            background-color: #dc3545;
+        }
+        .cleanup-btn:hover {
+            background-color: #c82333;
+        }
+        pre {
+            background-color: #1a1a1a;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            border: 1px solid #444;
+        }
+        .success {
+            color: #28a745;
+            background-color: #1a3d1a;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .error {
+            color: #dc3545;
+            background-color: #3d1a1a;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Wishlist Duplicate Fix Test</h1>
+    
+    <div class="container">
+        <h2>Problem Diagnosed</h2>
+        <p>Your wishlist has duplicate entries because movie IDs were stored as strings but compared as numbers:</p>
+        <pre>Current: ["552524","552524","552524","552524","1090007"]
+Should be: [552524, 1090007]</pre>
+    </div>
+
+    <div class="container">
+        <h2>Test Actions</h2>
+        <button onclick="checkWishlist()">Check Current Wishlist</button>
+        <button onclick="cleanupWishlist()" class="cleanup-btn">Clean Up Duplicates</button>
+        <button onclick="testAddMovie()">Test Add Movie (552524)</button>
+        <button onclick="testRemoveMovie()">Test Remove Movie (552524)</button>
+    </div>
+
+    <div class="container">
+        <h2>Results</h2>
+        <div id="output"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3002';
+        const outputDiv = document.getElementById('output');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
+            outputDiv.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+        }
+
+        function logJSON(data, title = 'Response') {
+            outputDiv.innerHTML += `<div><strong>${title}:</strong><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+        }
+
+        async function checkWishlist() {
+            try {
+                log('Checking current wishlist...');
+                const response = await fetch(`${API_BASE}/api/wishlist?userId=test`, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`Wishlist has ${data.wishlist.length} items`, 'success');
+                    logJSON(data, 'Current Wishlist');
+                } else {
+                    log(`Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Network error: ${error.message}`, 'error');
+            }
+        }
+
+        async function cleanupWishlist() {
+            try {
+                log('Cleaning up wishlist duplicates...');
+                const response = await fetch(`${API_BASE}/api/wishlist/cleanup`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`✅ ${data.message}`, 'success');
+                    log(`Cleaned wishlist now has ${data.count} unique items`, 'success');
+                    logJSON(data, 'Cleanup Result');
+                } else {
+                    log(`Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Network error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAddMovie() {
+            try {
+                log('Testing add movie (552524)...');
+                const response = await fetch(`${API_BASE}/api/wishlist/add`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ movieId: 552524 })
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('✅ Movie added successfully', 'success');
+                    logJSON(data, 'Add Movie Result');
+                } else {
+                    log(`Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Network error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testRemoveMovie() {
+            try {
+                log('Testing remove movie (552524)...');
+                const response = await fetch(`${API_BASE}/api/wishlist/remove`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ movieId: 552524 })
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('✅ Movie removed successfully', 'success');
+                    logJSON(data, 'Remove Movie Result');
+                } else {
+                    log(`Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Network error: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialize
+        log('Wishlist duplicate fix test page loaded');
+        log('Click "Check Current Wishlist" to see the current state');
+        log('Click "Clean Up Duplicates" to fix the duplicate issue');
+    </script>
+</body>
+</html>

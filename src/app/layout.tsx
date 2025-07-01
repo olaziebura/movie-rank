@@ -1,9 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Sidebar } from "@/components/Sidebar";
 import { auth0 } from "@/lib/auth/auth0";
 
+export const viewport: Viewport = {
+  themeColor: "#1F2937",
+};
+
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'),
   title: "MovieRank | Movie Ratings & Rankings",
   description: "Discover, rate, and rank your favorite movies with MovieRank",
   keywords: ["movies", "ratings", "film rankings", "cinema", "movie reviews"],
@@ -36,7 +41,6 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   manifest: "/site.webmanifest",
-  themeColor: "#1F2937",
 };
 
 export default async function RootLayout({

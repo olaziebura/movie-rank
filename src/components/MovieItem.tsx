@@ -1,16 +1,14 @@
 "use client";
-import type { Movie } from "@/types/movie";
-import { Star, Vote, Heart } from "lucide-react";
-import Image from "next/image";
-import { useState } from "react";
 
-import {
-  addMovieToWishlist,
-  removeMovieFromWishlist,
-} from "@/lib/supabase/wishlist";
+import type { Movie } from "@/types/movie";
+import { Star, Vote } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useCallback, useMemo } from "react";
+
 import type { SessionData } from "@auth0/nextjs-auth0/types";
 import type { UserProfile } from "@/types/user";
-import { cn } from "@/lib/utils";
+import { WishlistButton } from "./WishlistButton";
 
 type MovieItemProps = {
   movie: Movie;
@@ -26,11 +24,7 @@ export const MovieItem = ({
   session,
   profile,
 }: MovieItemProps) => {
-  const [isInWishlist, setIsInWishlist] = useState(
-    !!profile?.wishlist.find((id) => Number(id) === movie.id)
-  );
-
-  const { user } = session || {};
+  const router = useRouter();
   const {
     id,
     title,
@@ -41,47 +35,77 @@ export const MovieItem = ({
     overview,
   } = movie;
 
-  const handleWishlistToggle = async () => {
-    const userId = user?.sub || user?.id;
-    if (!userId) return;
+  // Check if movie is released (only show released movies)
+  const isReleased = useMemo(() => {
+    if (!release_date) return false;
+    return new Date(release_date) <= new Date();
+  }, [release_date]);
 
-    if (isInWishlist) {
-      await removeMovieFromWishlist(userId, id);
-    } else {
-      await addMovieToWishlist(userId, id);
-    }
-    setIsInWishlist(!isInWishlist);
-  };
+  // Calculate star rating (0-10 scale to 0-10 stars)
+  const starsCount = useMemo(() => {
+    return Math.round(Math.max(0, Math.min(10, vote_average)));
+  }, [vote_average]);
 
-  const isReleased = new Date(release_date) <= new Date();
-  if (!isReleased) return null;
+  // Check if user has this movie in wishlist
+  const isInWishlist = useMemo(() => {
+    if (!profile?.wishlist) return false;
+    return profile.wishlist.includes(id);
+  }, [profile?.wishlist, id]);
 
-  const starsCount = Math.round(vote_average);
+  const handleNavigate = useCallback(() => {
+    router.push(`/movie/${id}`);
+  }, [router, id]);
+
+  const handleWishlistClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+  }, []);
+
+  // Don't render unreleased movies
+  if (!isReleased) {
+    return null;
+  }
+
+  // Generate poster URL with fallback
+  const posterUrl = poster_path
+    ? `https://image.tmdb.org/t/p/w500${poster_path}`
+    : "/placeholder-movie.svg";
 
   return (
     <div
-      className="relative bg-neutral-600 text-white rounded shadow-2xl group transform transition-transform hover:scale-101"
-      key={id}
+      className="relative bg-neutral-600 text-white rounded-lg shadow-2xl group transform transition-all duration-300 hover:scale-105 cursor-pointer overflow-hidden"
+      onClick={handleNavigate}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleNavigate();
+        }
+      }}
+      aria-label={`View details for ${title}`}
     >
       <div className="relative overflow-hidden">
-        {typeof position === "number" && !!position && (
-          <div className="absolute w-full h-full bg-neutral-900/40 overflow-hidden transition-opacity group-hover:opacity-0">
-            <span className="absolute -left-10 top-30 -tracking-[60px] text-[300px] transform opacity-30">
+        {/* Position overlay for ranked lists */}
+        {typeof position === "number" && position > 0 && (
+          <div className="absolute w-full h-full bg-neutral-900/40 overflow-hidden transition-opacity group-hover:opacity-0 z-10">
+            <span className="absolute -left-10 top-30 -tracking-[60px] text-[300px] font-bold transform opacity-30 select-none">
               {position}
             </span>
           </div>
         )}
 
         <Image
-          width={200}
-          height={300}
-          src={`https://image.tmdb.org/t/p/w500${poster_path}`}
-          alt={title}
-          className="w-full h-auto rounded mb-2"
+          width={500}
+          height={750}
+          src={posterUrl}
+          alt={`${title} poster`}
+          className="w-full h-auto rounded-t-lg"
+          priority={position ? position <= 6 : false}
         />
 
-        <div className="absolute bottom-0 left-0 right-0 px-4 py-4 bg-neutral-700/80 group-hover:opacity-0 transition-opacity duration-300">
-          <h3 className="text-lg font-semibold">{title}</h3>
+        {/* Default overlay with title and rating */}
+        <div className="absolute bottom-0 left-0 right-0 px-4 py-4 bg-gradient-to-t from-neutral-900/90 to-transparent group-hover:opacity-0 transition-opacity duration-300">
+          <h3 className="text-lg font-semibold mb-2 line-clamp-2">{title}</h3>
           <div className="flex items-center gap-1 text-yellow-500">
             {Array.from({ length: 10 }).map((_, i) => (
               <Star
@@ -89,35 +113,41 @@ export const MovieItem = ({
                 fill={i < starsCount ? "currentColor" : "none"}
                 stroke="currentColor"
                 className="w-4 h-4"
+                aria-hidden="true"
               />
             ))}
+            <span className="ml-2 text-sm text-gray-300">
+              ({vote_average.toFixed(1)})
+            </span>
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 bg-neutral-700/80 px-4 py-2 translate-y-full group-hover:translate-y-0 transition-all duration-300">
-          <div className="flex items-center justify-between mt-2">
-            <p className="text-sm text-gray-400 flex gap-1 items-center">
-              <Vote />
-              <span>{vote_count}</span>
+        {/* Hover overlay with additional details */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-neutral-900/95 to-neutral-800/80 px-4 py-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm text-gray-300 flex gap-1 items-center">
+              <Vote className="w-4 h-4" aria-hidden="true" />
+              <span>{vote_count.toString()} votes</span>
             </p>
-            <p className="text-sm text-gray-400">{release_date}</p>
+            <p className="text-sm text-gray-300">
+              {new Date(release_date).getFullYear()}
+            </p>
           </div>
-          <p className="text-sm text-gray-200 mt-2">{overview}</p>
-          <a
-            href={`/movie/${id}`}
-            className="inline-block mt-2 text-blue-300 hover:text-blue-400"
-          >
-            Show more
-          </a>
+          {overview && (
+            <p className="text-sm text-gray-200 line-clamp-3">{overview}</p>
+          )}
         </div>
-        {session && (
-          <div className="absolute top-2 right-2">
-            <Heart
-              className={cn("w-8 h-8 cursor-pointer text-gray-300", {
-                "text-red-500": isInWishlist,
-              })}
-              onClick={handleWishlistToggle}
-              fill={isInWishlist ? "currentColor" : "none"}
+
+        {/* Wishlist button */}
+        {session?.user && profile && (
+          <div
+            className="absolute top-3 right-3 z-20"
+            onClick={handleWishlistClick}
+          >
+            <WishlistButton
+              userId={session.user.sub || session.user.id}
+              movieId={id}
+              initialIsInWishlist={isInWishlist}
             />
           </div>
         )}

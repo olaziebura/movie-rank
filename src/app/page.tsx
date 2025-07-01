@@ -6,6 +6,7 @@ import {
 } from "@/lib/supabase/profiles";
 import { PopularMovies } from "@/components/homepage/PopularMovies";
 import { Hero } from "@/components/homepage/Hero";
+import { UpcomingMoviesCarousel } from "@/components/homepage/UpcomingMoviesCarousel";
 
 export default async function HomePage() {
   const session = await auth0.getSession();
@@ -28,6 +29,7 @@ export default async function HomePage() {
   return (
     <main>
       <Hero />
+      <UpcomingMoviesCarousel />
       <PopularMovies
         profile={profile}
         session={session}

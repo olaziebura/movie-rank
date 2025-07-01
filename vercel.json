@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/sync-movies",
+      "schedule": "0 */2 * * *"
+    },
+    {
+      "path": "/api/cron/curate-upcoming-movies",
+      "schedule": "30 */2 * * *"
+    }
+  ]
+}

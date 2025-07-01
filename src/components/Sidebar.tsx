@@ -10,9 +10,9 @@ import {
   Settings,
   Heart,
   User,
-  Film,
   Power,
   PowerOff,
+  Search,
 } from "lucide-react";
 import {
   NavigationMenu,
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 import type { SessionData } from "@auth0/nextjs-auth0/types";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
 type SidebarProps = {
   session: SessionData | null;
@@ -37,36 +38,34 @@ type SidebarLinkProps = {
 
 export const Sidebar = ({ session }: SidebarProps) => {
   const [expanded, setExpanded] = useState(false);
+  const { profile: userProfile, loading: profileLoading } = useUserProfile();
   const isAuthenticated = !!session;
-  console.log(session?.user);
-  // Links for authenticated users
+
   const authenticatedLinks = [
+    { href: "/search", label: "Search Movies", icon: <Search /> },
     { href: "/wishlist", label: "My wishlist", icon: <Heart /> },
     { href: "/settings", label: "Settings", icon: <Settings /> },
     {
       label: "My profile",
       href: "/profile",
-      icon: !session?.user.picture ? (
+      icon: profileLoading ? (
+        <div className="min-w-6 min-h-6 rounded-2xl bg-gray-200 animate-pulse" />
+      ) : !userProfile?.profile_image_url ? (
         <User />
       ) : (
         <Image
           width={20}
           height={20}
-          src={session.user.picture}
+          src={userProfile.profile_image_url}
           alt="User profile picture"
-          className="min-w-6 min-h-6 rounded-2xl"
+          className="min-w-6 min-h-6 rounded-2xl object-cover"
         />
       ),
     },
   ];
 
-  // Links for non-authenticated users
-  const unauthenticatedLinks = [
-    { href: "/", label: "Home", icon: <Home /> },
-    { href: "/movies/popular", label: "Popular now", icon: <Film /> },
-  ];
+  const unauthenticatedLinks = [{ href: "/", label: "Home", icon: <Home /> }];
 
-  // Common links hidden under the "About" dropdown
   const commonLinks = [
     { href: "/about", label: "About us", icon: Info },
     { href: "/contact", label: "Contact us", icon: Phone },
@@ -75,7 +74,6 @@ export const Sidebar = ({ session }: SidebarProps) => {
     { href: "/privacy", label: "Privacy policy", icon: Info },
   ];
 
-  // Auth button based on authentication status
   const authButton = isAuthenticated
     ? { href: "/auth/logout", label: "Log out", icon: <PowerOff /> }
     : { href: "/auth/login", label: "Log in", icon: <Power /> };
@@ -105,7 +103,7 @@ export const Sidebar = ({ session }: SidebarProps) => {
       className={cn(
         "z-100 fixed group flex flex-col bg-accent-500 text-neutral-800 font-medium h-screen max-w-14 py-4",
         "transition-all duration-300",
-        { "max-w-40": expanded }
+        { "max-w-45": expanded }
       )}
     >
       {unauthenticatedLinks.map((link) => (

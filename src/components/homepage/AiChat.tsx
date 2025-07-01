@@ -1,148 +1,111 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { searchMovies } from "@/lib/tmdb/movies";
-import { MovieItem } from "../MovieItem";
-import type { Movie } from "@/types/movie";
-
-const cn = (...classes: (string | boolean | undefined)[]) =>
-  classes.filter(Boolean).join("");
+import Image from "next/image";
+import type { MovieRecord } from "@/types/movie";
 
 interface MovieRecommendation {
-  title: string;
-  year: string;
-  description: string;
-  explanation: string;
+  movie: MovieRecord;
+  reasoning: string;
+  score: number;
 }
 
 interface RecommendationsResponse {
+  success: boolean;
   recommendations: MovieRecommendation[];
+  explanation: string;
+  totalMoviesConsidered: number;
 }
 
-interface TMDBSearchResults {
-  [normalizedTitle: string]: {
-    results: Movie[];
-  };
-}
-
+/**
+ * AI-powered movie recommendation chat component.
+ * Allows users to describe what they're looking for and get personalized movie recommendations.
+ */
 export default function AiChat() {
   const [description, setDescription] = useState<string>("");
   const [aiResponse, setAiResponse] = useState<RecommendationsResponse | null>(
     null
   );
-  const [tmdbResults, setTmdbResults] = useState<TMDBSearchResults | null>(
-    null
-  );
   const [loading, setLoading] = useState<boolean>(false);
-  const [tmdbLoading, setTmdbLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
 
-  const searchTMDBForMovies = async (titles: string[]) => {
-    const results: TMDBSearchResults = {};
+  const handleSubmit = useCallback(
+    async (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
 
-    for (const title of titles) {
-      // Remove any year information and clean the title for better search results
-      const cleanTitle = title.replace(/\(\d{4}\)/, "").trim();
-      const normalizedTitle = title.toLowerCase();
+      if (!description.trim()) {
+        setError("Please describe what kind of movie you're looking for.");
+        return;
+      }
+
+      setLoading(true);
+      setError("");
+      setAiResponse(null);
 
       try {
-        if (!cleanTitle) {
-          console.warn("Empty search title, skipping");
-          continue;
-        }
+        const res = await fetch("/api/movies/recommendations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            customPrompt: description,
+            userPreferences: {
+              minRating: 6.0, // Set a reasonable minimum rating
+            },
+            maxMovies: 3,
+          }),
+        });
 
-        const data = await searchMovies(cleanTitle);
-        results[normalizedTitle] = data;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (error: any) {
-        console.error(
-          `Error searching for "${cleanTitle}":`,
-          error?.response?.data || error.message
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          // Handle nested data structure from API
+          const responseData = data.data || data;
+          setAiResponse(responseData);
+        } else {
+          const errorMessage =
+            data.message || data.error || "Failed to get recommendations";
+          setError(errorMessage);
+        }
+      } catch (error) {
+        console.error("Error fetching recommendations:", error);
+        setError(
+          "An error occurred while fetching recommendations. Please try again."
         );
-        // Continue with other titles even if one fails
+      } finally {
+        setLoading(false);
       }
-    }
+    },
+    [description]
+  );
 
-    setTmdbResults(results);
-    return results;
-  };
-
-  const fetchTMDBResults = async () => {
-    if (!aiResponse) return;
-
-    setTmdbLoading(true);
-    try {
-      const titles = aiResponse.recommendations.map(
-        (movie: MovieRecommendation) => movie.title
-      );
-      await searchTMDBForMovies(titles);
-    } catch (error) {
-      setError("Failed to fetch movie details from TMDB");
-      console.error(error);
-    } finally {
-      setTmdbLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    setTmdbResults(null);
-    setAiResponse(null);
-
-    try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          prompt: `Based on the following description, recommend 3 movies: "${description}". 
-              Return an object in JSON format: {"recommendations":[{"title":"","year":"","description": "","explanation":""}]}`,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        try {
-          const parsedResult: RecommendationsResponse = JSON.parse(data.result);
-          setAiResponse(parsedResult);
-        } catch (e) {
-          setError("Failed to parse recommendation data");
-          console.error(e);
-        }
-      } else {
-        setError(data.error || "Failed to get recommendations");
-      }
-    } catch (error) {
-      setError("An error occurred while fetching recommendations");
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setDescription(e.target.value);
+      if (error) setError(""); // Clear error when user starts typing
+    },
+    [error]
+  );
 
   return (
-    <div className="relative flex flex-col md:flex-row gap-12 w-full justify-around max-w-screen-xlg mt-8 overflow-hidden">
-      <div className="relative z-10">
+    <div className="relative flex flex-col lg:flex-row gap-12 w-full justify-around max-w-7xl mt-8 overflow-hidden">
+      {/* Input Section */}
+      <div className="relative z-10 flex-1">
         <div className="flex flex-col items-center gap-4 font-bold">
-          <span className="uppercase opacity-10 text-4xl">
+          <span className="uppercase opacity-10 text-4xl text-center">
             Looking for a movie?
           </span>
-          <span className="-mt-10 z-10 text-4xl">Ask our AI assistant!</span>
+          <span className="-mt-10 z-10 text-4xl text-center">
+            Ask our AI assistant!
+          </span>
         </div>
 
-        <Card
-          className={cn(
-            "w-full max-w-lg flex justify-center items-center mx-auto bg-transparent border-none"
-          )}
-        >
+        <Card className="w-full max-w-lg mx-auto bg-transparent border-none">
           <CardContent className="w-full">
             <form
               onSubmit={handleSubmit}
@@ -150,22 +113,27 @@ export default function AiChat() {
             >
               <Textarea
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Example: I want a sci-fi movie with time travel and philosophical themes..."
+                onChange={handleInputChange}
+                placeholder="Example: I want a sci-fi movie with time travel and philosophical themes, something like Inception but not too complex..."
                 required
-                className="min-h-42 min-w-full max-h-42 text-md resize-none bg-transparent text-neutral-50 border-yellow-500 focus:border-yellow-500 focus:ring-0"
+                minLength={10}
+                maxLength={500}
+                className="min-h-[120px] text-md resize-none bg-transparent text-neutral-50 border-yellow-500 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 placeholder:text-neutral-400"
               />
               <Button
                 type="submit"
-                disabled={loading}
-                className="w-auto bg-yellow-500 hover:bg-yellow-600 text-black font-semibold mt-4"
+                disabled={loading || !description.trim()}
+                className="w-auto bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-500/50 text-black font-semibold mt-4 transition-colors"
               >
                 {loading ? "Finding movies..." : "Get Recommendations"}
               </Button>
             </form>
 
             {error && (
-              <Alert variant="destructive" className="mt-4">
+              <Alert
+                variant="destructive"
+                className="mt-4 bg-red-900/20 border-red-500"
+              >
                 <AlertTitle>Error</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
@@ -174,76 +142,163 @@ export default function AiChat() {
         </Card>
       </div>
 
-      <div className="max-w-full md:max-w-1/2">
+      {/* Results Section */}
+      <div className="flex-1 max-w-full lg:max-w-2xl">
         {loading ? (
-          <div>
-            <h3 className="text-xl">Check out these recommendations:</h3>
-            <div className="animate-pulse flex flex-col gap-4 mt-4">
-              <div className="h-6 bg-neutral-700 rounded w-1/2 mb-2"></div>
-              <div className="h-4 bg-neutral-600 rounded w-full mb-2"></div>
-              <div className="h-4 bg-neutral-600 rounded w-3/4 mb-2"></div>
-              <div className="h-4 bg-neutral-600 rounded w-1/2"></div>
-            </div>
-          </div>
+          <LoadingState />
+        ) : aiResponse ? (
+          <RecommendationResults response={aiResponse} />
         ) : (
-          aiResponse && (
-            <div>
-              <h3 className="text-xl mb-2">Check out these recommendations:</h3>
-              {!tmdbResults && (
-                <Button
-                  onClick={fetchTMDBResults}
-                  disabled={tmdbLoading}
-                  className="mb-4 bg-yellow-500 hover:bg-yellow-600 text-black font-semibold"
-                >
-                  {tmdbLoading
-                    ? "Loading movie details..."
-                    : "Get Movie Details from TMDB"}
-                </Button>
-              )}
-              <div className="space-y-4">
-                {aiResponse.recommendations.map((movie, index) => {
-                  const normalizedTitle = movie.title.toLowerCase();
-                  const tmdbMatch =
-                    tmdbResults?.[normalizedTitle]?.results || [];
-
-                  return (
-                    <div
-                      key={index}
-                      className="p-4 border border-yellow-500 rounded-lg"
-                    >
-                      <h4 className="text-lg font-bold">
-                        {movie.title} ({movie.year})
-                      </h4>
-                      <p className="mb-2">
-                        {movie.explanation || movie.description}
-                      </p>
-
-                      {tmdbLoading && !tmdbResults && (
-                        <div className="animate-pulse mt-2">
-                          <div className="h-4 bg-neutral-600 rounded w-1/2 mb-2"></div>
-                          <div className="h-20 bg-neutral-700 rounded w-full"></div>
-                        </div>
-                      )}
-
-                      {tmdbMatch.length > 0 && (
-                        <div className="mt-2">
-                          <h5 className="text-sm font-semibold">
-                            TMDB Results:
-                          </h5>
-                          <div className="grid grid-cols-2 gap-2 mt-2">
-                            {tmdbMatch.slice(0, 2).map((tmdbMovie) => (
-                              <MovieItem key={tmdbMovie.id} movie={tmdbMovie} />
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )
+          <EmptyState />
         )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Loading state component
+ */
+function LoadingState() {
+  return (
+    <div className="space-y-4">
+      <h3 className="text-xl font-semibold">
+        Finding perfect movies for you...
+      </h3>
+      <div className="animate-pulse space-y-4">
+        <div className="h-6 bg-neutral-700 rounded w-1/2"></div>
+        <div className="space-y-2">
+          <div className="h-4 bg-neutral-600 rounded w-full"></div>
+          <div className="h-4 bg-neutral-600 rounded w-3/4"></div>
+          <div className="h-4 bg-neutral-600 rounded w-1/2"></div>
+        </div>
+        <div className="flex gap-4">
+          <div className="w-16 h-24 bg-neutral-600 rounded"></div>
+          <div className="flex-1 space-y-2">
+            <div className="h-4 bg-neutral-600 rounded w-3/4"></div>
+            <div className="h-4 bg-neutral-600 rounded w-1/2"></div>
+            <div className="h-3 bg-neutral-700 rounded w-full"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Empty state component
+ */
+function EmptyState() {
+  return (
+    <div className="text-center py-12 text-neutral-400">
+      <div className="text-6xl mb-4">🎬</div>
+      <h3 className="text-lg font-medium mb-2">
+        Ready to discover your next favorite movie?
+      </h3>
+      <p className="text-sm">
+        Describe what you&apos;re in the mood for, and our AI will find the
+        perfect recommendations for you.
+      </p>
+    </div>
+  );
+}
+
+function RecommendationResults({
+  response,
+}: {
+  response: RecommendationsResponse;
+}) {
+  // Safety check for recommendations array
+  if (!response.recommendations || !Array.isArray(response.recommendations)) {
+    return (
+      <div className="text-center py-8 text-red-400">
+        <p>
+          No recommendations found. Please try again with a different request.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-xl font-semibold mb-2">
+          AI Recommendations for you:
+        </h3>
+        <p className="text-sm text-gray-300 mb-4">{response.explanation}</p>
+      </div>
+
+      <div className="space-y-6">
+        {response.recommendations.map((recommendation, index) => (
+          <RecommendationCard
+            key={recommendation.movie.id}
+            recommendation={recommendation}
+            index={index}
+          />
+        ))}
+      </div>
+
+      <div className="mt-6 text-xs text-gray-400 text-center">
+        Analyzed {response.totalMoviesConsidered} movies to find these perfect
+        matches
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Individual recommendation card component
+ */
+function RecommendationCard({
+  recommendation,
+  index,
+}: {
+  recommendation: MovieRecommendation;
+  index: number;
+}) {
+  return (
+    <div className="bg-neutral-700/50 rounded-lg p-4 hover:bg-neutral-700/70 transition-colors">
+      <div className="flex items-start gap-4">
+        {recommendation.movie.poster_path && (
+          <Image
+            src={`https://image.tmdb.org/t/p/w200${recommendation.movie.poster_path}`}
+            alt={`${recommendation.movie.title} poster`}
+            width={64}
+            height={96}
+            className="w-16 h-24 object-cover rounded shadow-md"
+            loading={index === 0 ? "eager" : "lazy"}
+          />
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <h4 className="text-lg font-semibold text-white truncate">
+              {recommendation.movie.title}
+            </h4>
+            <span className="text-yellow-400 text-sm flex items-center gap-1">
+              ⭐ {recommendation.movie.vote_average.toFixed(1)}
+            </span>
+            <span className="text-blue-400 text-sm">
+              AI Score: {recommendation.score}/10
+            </span>
+          </div>
+
+          <p className="text-sm text-gray-300 mb-2">
+            {new Date(recommendation.movie.release_date).getFullYear()}
+          </p>
+
+          {recommendation.movie.overview && (
+            <p className="text-sm text-gray-200 mb-3 line-clamp-2">
+              {recommendation.movie.overview}
+            </p>
+          )}
+
+          <div className="bg-neutral-800/50 p-3 rounded">
+            <p className="text-xs text-yellow-400 font-medium mb-1">
+              Why we recommend this:
+            </p>
+            <p className="text-sm text-gray-300">{recommendation.reasoning}</p>
+          </div>
+        </div>
       </div>
     </div>
   );

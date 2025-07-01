@@ -22,6 +22,7 @@ export const PopularMovies = ({
   session,
   profile,
 }: PopularMoviesProps) => {
+
   if (!movies) {
     return (
       <div className="mx-auto pb-10 p-4 text-white overflow-hidden bg-neutral-600">
@@ -74,6 +75,7 @@ export const PopularMovies = ({
 
   return (
     <div className="mx-auto pb-10 p-4 text-white overflow-hidden bg-neutral-600">
+      <h2 className="text-3xl font-bold mb-4">Top 10 Popular Movies</h2>
       <Slider ref={sliderRef} {...sliderSettings}>
         {top10Movies.map((movie, index) => (
           <div key={movie.id} className="px-2">
