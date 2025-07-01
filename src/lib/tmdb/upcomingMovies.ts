@@ -32,7 +32,11 @@ export async function getUpcomingMovies(page = 1): Promise<{
       page: page.toString(),
       language: "en-US",
       region: "US", // Focus on US releases for consistency
-    });
+    }) as {
+      results: Movie[];
+      total_pages: number;
+      total_results: number;
+    };
 
     if (!response.results) {
       throw new Error("No upcoming movies data received");
@@ -70,9 +74,9 @@ export async function getUpcomingMovieDetails(
     const response = await tmdbFetch(`/movie/${movieId}`, {
       language: "en-US",
       append_to_response: "genres,production_companies",
-    });
+    }) as UpcomingMovieDetail;
 
-    return response as UpcomingMovieDetail;
+    return response;
   } catch (error) {
     console.error(`Error fetching details for movie ${movieId}:`, error);
     throw error;

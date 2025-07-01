@@ -12,18 +12,22 @@ import { auth0 } from "@/lib/auth/auth0";
 import { getProfile } from "@/lib/supabase/profiles";
 
 type SearchPageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     q?: string;
     page?: string;
-  };
+  }>;
 };
 
-export async function generateMetadata({ searchParams }: SearchPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  searchParams,
+}: SearchPageProps): Promise<Metadata> {
   const resolvedSearchParams = await searchParams;
   const query = resolvedSearchParams?.q || "";
   return {
-    title: query ? `Search results for "${query}" | MovieRank` : "Search Movies | MovieRank",
-    description: query 
+    title: query
+      ? `Search results for "${query}" | MovieRank`
+      : "Search Movies | MovieRank",
+    description: query
       ? `Find movies matching "${query}" in our extensive movie database.`
       : "Search through thousands of movies to find your next favorite film.",
   };
@@ -40,7 +44,7 @@ function EmptySearchState() {
         Search for Movies
       </h2>
       <p className="text-gray-600 mb-8 max-w-md mx-auto">
-        Use the search bar above to find movies by title, actor, or director. 
+        Use the search bar above to find movies by title, actor, or director.
         Discover your next favorite film from our extensive database.
       </p>
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -81,8 +85,8 @@ function NoResults({ query }: { query: string }) {
             Browse Popular Movies
           </Link>
         </Button>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={() => window.history.back()}
           className="flex items-center gap-2"
         >
@@ -109,9 +113,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   if (query.trim()) {
     try {
       searchResults = await searchMovies(query, page);
-      
+
       // Convert TMDBMovie to Movie type
-      movies = searchResults.results.map(movie => ({
+      movies = searchResults.results.map((movie) => ({
         id: movie.id,
         title: movie.title,
         poster_path: movie.poster_path,
@@ -144,7 +148,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
           {/* Search Bar */}
           <div className="max-w-2xl">
-            <SearchBar 
+            <SearchBar
               placeholder="Search for movies, actors, or directors..."
               className="w-full"
             />
@@ -180,7 +184,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     Showing page {page} of {searchResults.total_pages}
                   </span>
                   <span>
-                    Results {((page - 1) * 20) + 1}-{Math.min(page * 20, searchResults.total_results)} 
+                    Results {(page - 1) * 20 + 1}-
+                    {Math.min(page * 20, searchResults.total_results)}
                     of {searchResults.total_results}
                   </span>
                 </div>
@@ -209,8 +214,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               <div className="flex items-center justify-center gap-4">
                 {page > 1 && (
                   <Button asChild variant="outline">
-                    <Link 
-                      href={`/search?q=${encodeURIComponent(query)}&page=${page - 1}`}
+                    <Link
+                      href={`/search?q=${encodeURIComponent(query)}&page=${
+                        page - 1
+                      }`}
                       className="flex items-center gap-2"
                     >
                       <ArrowLeft className="w-4 h-4" />
@@ -218,15 +225,17 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     </Link>
                   </Button>
                 )}
-                
+
                 <span className="px-4 py-2 text-sm text-gray-600">
                   Page {page} of {searchResults.total_pages}
                 </span>
-                
+
                 {page < searchResults.total_pages && (
                   <Button asChild variant="outline">
-                    <Link 
-                      href={`/search?q=${encodeURIComponent(query)}&page=${page + 1}`}
+                    <Link
+                      href={`/search?q=${encodeURIComponent(query)}&page=${
+                        page + 1
+                      }`}
                       className="flex items-center gap-2"
                     >
                       Next

@@ -6,10 +6,11 @@ import {
 } from "@/lib/supabase/profiles";
 import Image from "next/image";
 import { WishlistButton } from "@/components/WishlistButton";
+
 interface MoviePageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function MoviePage({ params }: MoviePageProps) {

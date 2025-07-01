@@ -184,7 +184,7 @@ export class MovieRecommendationService {
     });
 
     // Determine minimum rating based on quality keywords
-    let minRating: number;
+    let minRating: number | undefined;
     if (
       lowerQuery.includes("best") ||
       lowerQuery.includes("top") ||

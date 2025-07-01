@@ -29,10 +29,10 @@ function EmptyWishlist() {
         </CardHeader>
         <CardContent className="pb-8">
           <p className="text-gray-600 mb-8 text-lg leading-relaxed">
-            Start building your movie collection! Add movies you want to watch 
+            Start building your movie collection! Add movies you want to watch
             and never forget about that perfect film you discovered.
           </p>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
             <div className="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg transition-colors">
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-3 hover:scale-110 transition-transform">
@@ -43,7 +43,7 @@ function EmptyWishlist() {
                 Browse movies and find your next favorite
               </p>
             </div>
-            
+
             <div className="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg transition-colors">
               <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-3 hover:scale-110 transition-transform">
                 <Heart className="w-6 h-6 text-red-600" />
@@ -53,7 +53,7 @@ function EmptyWishlist() {
                 Click the heart icon to add movies to your wishlist
               </p>
             </div>
-            
+
             <div className="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg transition-colors">
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3 hover:scale-110 transition-transform">
                 <Film className="w-6 h-6 text-green-600" />
@@ -64,15 +64,24 @@ function EmptyWishlist() {
               </p>
             </div>
           </div>
-          
+
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button asChild size="lg" className="hover:scale-105 transition-transform">
+            <Button
+              asChild
+              size="lg"
+              className="hover:scale-105 transition-transform"
+            >
               <Link href="/" className="flex items-center gap-2">
                 <Search className="w-4 h-4" />
                 Discover Movies
               </Link>
             </Button>
-            <Button variant="outline" asChild size="lg" className="hover:scale-105 transition-transform">
+            <Button
+              variant="outline"
+              asChild
+              size="lg"
+              className="hover:scale-105 transition-transform"
+            >
               <Link href="/profile" className="flex items-center gap-2">
                 <Star className="w-4 h-4" />
                 View Profile
@@ -112,10 +121,10 @@ function LoginRequired() {
 export default async function WishlistPage({
   searchParams,
 }: {
-  searchParams?: { page?: string };
+  searchParams?: Promise<{ page?: string }>;
 }) {
   const session = await auth0.getSession();
-  
+
   if (!session) {
     return <LoginRequired />;
   }
@@ -144,7 +153,8 @@ export default async function WishlistPage({
   }
 
   // Pagination logic
-  const page = parseInt(searchParams?.page ?? "1", 10);
+  const resolvedSearchParams = await searchParams;
+  const page = parseInt(resolvedSearchParams?.page ?? "1", 10);
   const itemsPerPage = 12; // Increased from 5 for better grid layout
   const start = (page - 1) * itemsPerPage;
   const end = start + itemsPerPage;
@@ -152,7 +162,7 @@ export default async function WishlistPage({
   const allWishlistMoviesDetails = await Promise.all(
     wishlist.map((movieId: number) => getMovieDetails(movieId))
   );
-  
+
   // Convert MovieDetails to Movie type and filter out null values
   const allWishlistMovies: Movie[] = allWishlistMoviesDetails
     .filter((movie): movie is NonNullable<typeof movie> => movie !== null)
@@ -164,10 +174,10 @@ export default async function WishlistPage({
       release_date: movieDetails.release_date,
       vote_count: movieDetails.vote_count,
       overview: movieDetails.overview,
-      genres: movieDetails.genres.map(g => g.id),
+      genres: movieDetails.genres.map((g) => g.id),
       popularity: movieDetails.popularity,
     }));
-  
+
   const totalMovies = allWishlistMovies.length;
   const totalPages = Math.ceil(totalMovies / itemsPerPage);
   const displayedMovies = allWishlistMovies.slice(start, end);
@@ -184,11 +194,11 @@ export default async function WishlistPage({
             <div>
               <h1 className="text-3xl font-bold text-gray-900">My Wishlist</h1>
               <p className="text-gray-600">
-                {totalMovies} {totalMovies === 1 ? 'movie' : 'movies'} saved
+                {totalMovies} {totalMovies === 1 ? "movie" : "movies"} saved
               </p>
             </div>
           </div>
-          
+
           <Button asChild variant="outline">
             <Link href="/" className="flex items-center gap-2">
               <Search className="w-4 h-4" />
@@ -206,7 +216,7 @@ export default async function WishlistPage({
                   {totalMovies}
                 </div>
                 <div className="text-sm text-gray-600">
-                  {totalMovies === 1 ? 'Movie Saved' : 'Movies Saved'}
+                  {totalMovies === 1 ? "Movie Saved" : "Movies Saved"}
                 </div>
               </div>
               <div>
@@ -214,7 +224,7 @@ export default async function WishlistPage({
                   {totalPages}
                 </div>
                 <div className="text-sm text-gray-600">
-                  {totalPages === 1 ? 'Page' : 'Pages'}
+                  {totalPages === 1 ? "Page" : "Pages"}
                 </div>
               </div>
               <div>
@@ -250,20 +260,26 @@ export default async function WishlistPage({
           <div className="flex items-center justify-center gap-4">
             {page > 1 && (
               <Button asChild variant="outline">
-                <Link href={`?page=${page - 1}`} className="flex items-center gap-2">
+                <Link
+                  href={`?page=${page - 1}`}
+                  className="flex items-center gap-2"
+                >
                   <ArrowLeft className="w-4 h-4" />
                   Previous
                 </Link>
               </Button>
             )}
-            
+
             <span className="px-4 py-2 text-sm text-gray-600">
               Page {page} of {totalPages}
             </span>
-            
+
             {page < totalPages && (
               <Button asChild variant="outline">
-                <Link href={`?page=${page + 1}`} className="flex items-center gap-2">
+                <Link
+                  href={`?page=${page + 1}`}
+                  className="flex items-center gap-2"
+                >
                   Next
                   <ArrowRight className="w-4 h-4" />
                 </Link>
