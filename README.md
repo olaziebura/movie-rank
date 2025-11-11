@@ -1,62 +1,35 @@
-# MovieRankThis is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MovieRank
 
-A modern movie discovery and wishlist application built with Next.js, featuring AI-powered recommendations, TMDB integration, and real-time data sync.## Getting Started
+A modern movie discovery and wishlist application built with Next.js, featuring TMDB integration, user reviews, and real-time data sync.
 
-## FeaturesFirst, run the development server:
+## Features
 
-- 🎬 **Movie Discovery**: Browse popular, top-rated, and upcoming movies from TMDB```bash
+- 🎬 **Movie Discovery**: Browse popular, top-rated, and upcoming movies from TMDB
+- ⭐ **Personal Wishlist**: Save and manage your favorite movies
+- 📝 **User Reviews**: Rate and review movies with your own comments
+- 🔍 **Smart Search**: Find movies with real-time search and suggestions
+- 📱 **Responsive Design**: Beautiful UI that works on all devices
+- 🔐 **Authentication**: Secure user authentication with Auth0
+- ⚡ **Real-time Sync**: Automatic database synchronization with TMDB
 
-- ⭐ **Personal Wishlist**: Save and manage your favorite moviesnpm run dev
+## Tech Stack
 
-- 🤖 **AI Recommendations**: Get personalized movie suggestions powered by OpenAI# or
-
-- 🔍 **Smart Search**: Find movies with real-time search and suggestionsyarn dev
-
-- 📱 **Responsive Design**: Beautiful UI that works on all devices# or
-
-- 🔐 **Authentication**: Secure user authentication with Auth0pnpm dev
-
-- ⚡ **Real-time Sync**: Automatic database synchronization with TMDB# or
-
-bun dev
-
-## Tech Stack```
-
-- **Framework**: Next.js 15 (App Router)Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
+- **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
-
-- **Styling**: TailwindCSS + shadcn/ui componentsYou can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
+- **Styling**: TailwindCSS + shadcn/ui components
 - **Database**: Supabase (PostgreSQL)
+- **Authentication**: Auth0
+- **APIs**: TMDB API
+- **Deployment**: Vercel
 
-- **Authentication**: Auth0This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Prerequisites
 
-- **APIs**: TMDB API, OpenAI API
-
-- **Deployment**: Vercel## Learn More
-
-## PrerequisitesTo learn more about Next.js, take a look at the following resources:
-
-Before you begin, ensure you have:- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Before you begin, ensure you have:
 
 - Node.js 20+ installed
-
-- A [Supabase](https://supabase.com) account and projectYou can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
+- A [Supabase](https://supabase.com) account and project
 - A [TMDB API](https://www.themoviedb.org/settings/api) key
-
-- An [Auth0](https://auth0.com) account and application## Deploy on Vercel
-
-- An [OpenAI API](https://platform.openai.com/) key (optional, for AI recommendations)
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-## Getting Started
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- An [Auth0](https://auth0.com) account and application
 
 ### 1. Clone the Repository
 
@@ -92,9 +65,6 @@ AUTH0_ISSUER_BASE_URL=your_auth0_domain
 AUTH0_CLIENT_ID=your_auth0_client_id
 AUTH0_CLIENT_SECRET=your_auth0_client_secret
 
-# OpenAI (Optional - for AI recommendations)
-OPENAI_API_KEY=your_openai_api_key
-
 # Vercel CRON Secret (for production)
 CRON_SECRET=your_random_secret_string
 ```
@@ -111,6 +81,7 @@ This will create:
 
 - `profiles` table (user data and wishlists)
 - `movies` table (cached TMDB movie data)
+- `reviews` table (user movie reviews and ratings)
 - `upcoming_movies_featured` table (curated upcoming movies)
 - All necessary indexes, triggers, and RLS policies
 
@@ -155,7 +126,6 @@ src/
 │   ├── auth/                     # Auth0 configuration
 │   ├── services/                 # Business logic services
 │   │   ├── movieSync.ts          # TMDB sync service
-│   │   ├── movieRecommendations.ts  # AI recommendations
 │   │   └── upcomingMoviesCuration.ts # Upcoming movies curation
 │   ├── supabase/                 # Supabase database operations
 │   ├── tmdb/                     # TMDB API integration
@@ -176,20 +146,21 @@ The app automatically syncs popular movies from TMDB:
 
 ### Upcoming Movies Curation
 
-An AI-powered system selects the top 10 most anticipated upcoming movies:
+A system that selects the top 10 most anticipated upcoming movies:
 
 - Analyzes release dates, popularity, and ratings
 - Ensures genre diversity
 - Updates daily via CRON job
 - Access via `/api/upcoming-movies/featured`
 
-### AI Movie Recommendations
+### User Reviews
 
-Powered by OpenAI GPT-4:
+Users can rate and review movies:
 
-- Personalized recommendations based on mood, genre, or similar movies
-- Considers user preferences and rating thresholds
-- Available on homepage and via `/api/movies/recommendations`
+- 10-star rating system (0-10)
+- Optional text comments
+- Combined rating calculation with TMDB ratings
+- Users can edit or delete their own reviews
 
 ## Deployment
 

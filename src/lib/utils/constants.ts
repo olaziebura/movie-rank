@@ -101,33 +101,6 @@ export const TMDB_CONFIG = {
   CACHE_TTL_MINUTES: 30,
 } as const;
 
-// OpenAI Configuration
-export const OPENAI_CONFIG = {
-  MODEL: "gpt-4o",
-  MAX_TOKENS: 1500,
-  TEMPERATURE: 0.7,
-
-  // Prompt limits
-  MAX_PROMPT_LENGTH: 4000,
-  MAX_MOVIES_IN_PROMPT: 50,
-
-  // Response settings
-  RESPONSE_FORMAT: "json_object",
-  TIMEOUT: 30000, // 30 seconds
-} as const;
-
-// AI Configuration
-export const AI_CONFIG = {
-  MOVIE_REVIEW_MODEL: "gpt-4o",
-  MOVIE_REVIEW_MAX_TOKENS: 500,
-  MOVIE_REVIEW_TEMPERATURE: 0.7,
-  MOVIE_EXPERT_SYSTEM_PROMPT:
-    "Jesteś pomocnym ekspertem filmowym. Generujesz recenzje, rekomendacje lub sugestie na podstawie opisu filmu lub szczegółowych danych.",
-  RECOMMENDATION_MODEL: "gpt-4o-mini",
-  RECOMMENDATION_MAX_TOKENS: 300,
-  RECOMMENDATION_TEMPERATURE: 0.8,
-} as const;
-
 // Genre IDs from TMDB
 export const GENRE_IDS = {
   ACTION: 28,
@@ -256,19 +229,12 @@ export const ERROR_MESSAGES = {
   MOVIES_FETCH_FAILED: "Failed to fetch movies. Please try again.",
   MOVIE_DETAILS_FAILED: "Failed to load movie details.",
 
-  // Recommendations
-  RECOMMENDATIONS_FAILED:
-    "Failed to generate recommendations. Please try again.",
-  NO_RECOMMENDATIONS:
-    "No recommendations available. Try adjusting your preferences.",
-
   // Database
   DATABASE_CONNECTION_FAILED: "Database connection failed.",
   DATABASE_QUERY_FAILED: "Database query failed.",
 
   // External APIs
   TMDB_API_ERROR: "Movie database service is temporarily unavailable.",
-  OPENAI_API_ERROR: "AI service is temporarily unavailable.",
 
   // Sync
   SYNC_IN_PROGRESS: "Database sync is already in progress.",

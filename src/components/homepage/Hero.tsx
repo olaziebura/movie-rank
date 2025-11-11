@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import AiChat from "./AiChat";
 import { SearchBar } from "@/components/SearchBar";
 
 // Pre-defined positions to avoid hydration mismatch
@@ -91,19 +90,7 @@ export const Hero = () => {
               className="w-full"
             />
           </motion.div>
-
-          <motion.div
-            className="text-sm text-gray-400"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-          >
-            or try our AI-powered movie recommendations below
-          </motion.div>
         </div>
-
-        {/* AI Chat */}
-        <AiChat />
       </div>
     </section>
   );

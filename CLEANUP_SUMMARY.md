@@ -156,10 +156,10 @@ Root:
 - ✅ `/api/auth/*` - Auth0 authentication
 - ✅ `/api/movies` - Movie data
 - ✅ `/api/movies/sync` - Manual sync trigger
-- ✅ `/api/movies/recommendations` - AI recommendations
 - ✅ `/api/upcoming-movies/featured` - Curated upcoming movies
 - ✅ `/api/search/movies` - Movie search
 - ✅ `/api/wishlist` - Wishlist operations
+- ✅ `/api/reviews` - User reviews and ratings
 - ✅ `/api/user/profile` - Profile management
 - ✅ `/api/user/delete` - Account deletion
 - ✅ `/api/admin/*` - Admin operations

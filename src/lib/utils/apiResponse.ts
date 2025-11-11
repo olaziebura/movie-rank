@@ -284,13 +284,6 @@ export class MovieApiResponses {
     );
   }
 
-  static openaiError(operation: string): NextResponse<ApiErrorResponse> {
-    return ResponseHelper.serviceUnavailable(
-      "OpenAI",
-      `Failed to ${operation} using OpenAI API`
-    );
-  }
-
   static databaseError(operation: string): NextResponse<ApiErrorResponse> {
     return ResponseHelper.error(
       `Database ${operation} failed`,
