@@ -72,3 +72,37 @@ export type MovieDetails = {
     logo_path: string | null;
   }>;
 };
+
+export type Review = {
+  id: string;
+  user_id: string;
+  movie_id: number;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ReviewWithUser = Review & {
+  user_name: string;
+  user_email: string;
+};
+
+export type MovieStats = {
+  tmdb_rating: number;
+  tmdb_count: number;
+  user_rating: number;
+  user_count: number;
+  combined_rating: number;
+};
+
+export type CreateReviewInput = {
+  movie_id: number;
+  rating: number;
+  comment?: string;
+};
+
+export type UpdateReviewInput = {
+  rating?: number;
+  comment?: string;
+};

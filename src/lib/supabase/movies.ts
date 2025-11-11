@@ -12,14 +12,11 @@ export async function upsertMovies(movies: MovieRecord[]) {
       .select();
 
     if (error) {
-      console.error("Error upserting movies:", error);
       throw error;
     }
 
-    console.log(`Successfully upserted ${data?.length || 0} movies`);
     return data;
   } catch (error) {
-    console.error("Failed to upsert movies:", error);
     throw error;
   }
 }
@@ -67,7 +64,7 @@ export async function getMoviesFromDatabase(
         ascending: options.sortOrder === "asc",
       });
     } else {
-      query = query.order("popularity", { ascending: false }); 
+      query = query.order("popularity", { ascending: false });
     }
 
     if (options.limit) {
@@ -84,13 +81,11 @@ export async function getMoviesFromDatabase(
     const { data, error } = await query;
 
     if (error) {
-      console.error("Error fetching movies from database:", error);
       throw error;
     }
 
     return data || [];
   } catch (error) {
-    console.error("Failed to fetch movies from database:", error);
     throw error;
   }
 }
@@ -104,13 +99,11 @@ export async function getMovieFromDatabase(id: number) {
       .single();
 
     if (error) {
-      console.error(`Error fetching movie ${id} from database:`, error);
       throw error;
     }
 
     return data;
   } catch (error) {
-    console.error(`Failed to fetch movie ${id} from database:`, error);
     throw error;
   }
 }
@@ -187,7 +180,6 @@ export async function getMoviesDatabaseStats() {
       categories: categoryCount || {},
     };
   } catch (error) {
-    console.error("Failed to get database stats:", error);
     throw error;
   }
 }

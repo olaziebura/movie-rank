@@ -12,7 +12,6 @@ export class MovieSyncService {
     error?: string;
   }> {
     if (this.isRunning) {
-      console.log("Movie sync already in progress, skipping...");
       return {
         success: false,
         moviesProcessed: 0,
@@ -21,15 +20,11 @@ export class MovieSyncService {
     }
 
     this.isRunning = true;
-    const startTime = Date.now();
 
     try {
-      console.log("Starting movie database sync...");
-
       const movies = await getAllMovieCategories(maxPages);
 
       if (movies.length === 0) {
-        console.log("No movies fetched from TMDB");
         return {
           success: false,
           moviesProcessed: 0,
@@ -45,17 +40,9 @@ export class MovieSyncService {
       await this.batchUpsertMovies(moviesWithTimestamps);
 
       this.lastSync = new Date();
-      const duration = Date.now() - startTime;
-
-      console.log(`Movie sync completed successfully:`, {
-        moviesProcessed: movies.length,
-        duration: `${duration}ms`,
-        timestamp: this.lastSync.toISOString(),
-      });
 
       return { success: true, moviesProcessed: movies.length };
     } catch (error) {
-      console.error("Error during movie sync:", error);
       return {
         success: false,
         moviesProcessed: 0,
@@ -76,15 +63,8 @@ export class MovieSyncService {
       batches.push(movies.slice(i, i + batchSize));
     }
 
-    console.log(
-      `Processing ${movies.length} movies in ${batches.length} batches`
-    );
-
     for (let i = 0; i < batches.length; i++) {
       const batch = batches[i];
-      console.log(
-        `Processing batch ${i + 1}/${batches.length} (${batch.length} movies)`
-      );
 
       try {
         await upsertMovies(batch);
@@ -93,7 +73,6 @@ export class MovieSyncService {
           await new Promise((resolve) => setTimeout(resolve, 200));
         }
       } catch (error) {
-        console.error(`Error processing batch ${i + 1}:`, error);
         throw error;
       }
     }
@@ -103,7 +82,7 @@ export class MovieSyncService {
     if (!this.lastSync) return true;
 
     const timeSinceLastSync = Date.now() - this.lastSync.getTime();
-    const intervalMs = intervalHours * 60 * 60 * 1000; 
+    const intervalMs = intervalHours * 60 * 60 * 1000;
 
     return timeSinceLastSync >= intervalMs;
   }
@@ -113,13 +92,12 @@ export class MovieSyncService {
       isRunning: this.isRunning,
       lastSync: this.lastSync,
       nextSyncDue: this.lastSync
-        ? new Date(this.lastSync.getTime() + 2 * 60 * 60 * 1000) 
-        : new Date(), 
+        ? new Date(this.lastSync.getTime() + 2 * 60 * 60 * 1000)
+        : new Date(),
     };
   }
 
   static async forceSyncMovies(maxPages = 5) {
-    console.log("Force syncing movies...");
     return this.syncMoviesToDatabase(maxPages);
   }
 
@@ -134,7 +112,6 @@ export class MovieSyncService {
         healthy: stats.totalMovies > 0,
       };
     } catch (error) {
-      console.error("Database health check failed:", error);
       return {
         totalMovies: 0,
         lastUpdate: null,

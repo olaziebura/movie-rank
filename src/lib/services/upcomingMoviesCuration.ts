@@ -50,26 +50,15 @@ export class UpcomingMoviesCurationService {
       }
 
       this.isRunning = true;
-      console.log("🎬 Starting upcoming movies curation process...");
 
-      console.log(`📡 Fetching upcoming movies (${maxPages} pages)...`);
       const upcomingMovies = await getBatchUpcomingMovies(maxPages);
 
       if (upcomingMovies.length === 0) {
         throw new Error("No upcoming movies found to curate");
       }
 
-      console.log(
-        `✅ Found ${upcomingMovies.length} upcoming movies to analyze`
-      );
-
-      console.log("🔍 Analyzing and scoring movies...");
       const scoredMovies = this.scoreAndRankMovies(upcomingMovies);
-
-      console.log("🎯 Selecting top 10 movies worth waiting for...");
       const curatedMovies = this.selectTop10WorthWaitingFor(scoredMovies);
-
-      console.log("💾 Storing curated list in database...");
       const storeResult = await storeFeaturedUpcomingMovies(curatedMovies);
 
       if (!storeResult.success) {
@@ -117,7 +106,7 @@ export class UpcomingMoviesCurationService {
         const { score, reasoning } = calculateWorthWaitingScore(movie);
         return { movie, score, reasoning };
       })
-      .sort((a, b) => b.score - a.score); 
+      .sort((a, b) => b.score - a.score);
 
     console.log(
       `📊 Scored ${scoredMovies.length} movies, top score: ${
@@ -134,7 +123,7 @@ export class UpcomingMoviesCurationService {
 
     const selected: CuratedMovie[] = [];
     const usedGenres = new Set<number>();
-    const minScore = 5; 
+    const minScore = 5;
 
     for (const { movie, score, reasoning } of scoredMovies) {
       if (selected.length >= 10) break;
@@ -165,7 +154,7 @@ export class UpcomingMoviesCurationService {
       for (const { movie, score, reasoning } of scoredMovies) {
         if (selected.length >= 10) break;
         if (selectedIds.has(movie.id)) continue;
-        if (score < minScore * 0.8) break; 
+        if (score < minScore * 0.8) break;
 
         selected.push({
           movie,
@@ -209,8 +198,8 @@ export class UpcomingMoviesCurationService {
       isRunning: this.isRunning,
       lastCuration: this.lastCuration,
       nextCurationDue: this.lastCuration
-        ? new Date(this.lastCuration.getTime() + 2 * 60 * 60 * 1000) 
-        : new Date(), 
+        ? new Date(this.lastCuration.getTime() + 2 * 60 * 60 * 1000)
+        : new Date(),
     };
   }
 

@@ -28,11 +28,11 @@ export async function getUpcomingMovies(page = 1): Promise<{
   totalResults: number;
 }> {
   try {
-    const response = await tmdbFetch("/movie/upcoming", {
+    const response = (await tmdbFetch("/movie/upcoming", {
       page: page.toString(),
       language: "en-US",
       region: "US", // Focus on US releases for consistency
-    }) as {
+    })) as {
       results: Movie[];
       total_pages: number;
       total_results: number;
@@ -71,10 +71,10 @@ export async function getUpcomingMovieDetails(
   movieId: number
 ): Promise<UpcomingMovieDetail> {
   try {
-    const response = await tmdbFetch(`/movie/${movieId}`, {
+    const response = (await tmdbFetch(`/movie/${movieId}`, {
       language: "en-US",
       append_to_response: "genres,production_companies",
-    }) as UpcomingMovieDetail;
+    })) as UpcomingMovieDetail;
 
     return response;
   } catch (error) {

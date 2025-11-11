@@ -6,6 +6,7 @@ import {
 } from "@/lib/supabase/profiles";
 import Image from "next/image";
 import { WishlistButton } from "@/components/WishlistButton";
+import { MovieReviewsSection } from "@/components/MovieReviewsSection";
 
 interface MoviePageProps {
   params: Promise<{
@@ -91,6 +92,10 @@ export default async function MoviePage({ params }: MoviePageProps) {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mt-12">
+        <MovieReviewsSection movieId={movieId} userId={userId} />
       </div>
     </div>
   );
