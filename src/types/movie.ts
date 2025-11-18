@@ -106,3 +106,22 @@ export type UpdateReviewInput = {
   rating?: number;
   comment?: string;
 };
+
+export type MediaType = "movie" | "tv" | "all";
+
+export type SearchFilters = {
+  query?: string;
+  mediaType?: MediaType;
+  genres?: number[];
+  releaseYearFrom?: number;
+  releaseYearTo?: number;
+  country?: string;
+  minRating?: number;
+  maxRating?: number;
+  sortBy?: "popularity.desc" | "popularity.asc" | "release_date.desc" | "release_date.asc" | "vote_average.desc" | "vote_average.asc";
+};
+
+export type Genre = {
+  id: number;
+  name: string;
+};

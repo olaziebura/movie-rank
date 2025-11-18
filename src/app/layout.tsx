@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { Sidebar } from "@/components/Sidebar";
+import { Topbar } from "@/components/Topbar";
 import { auth0 } from "@/lib/auth/auth0";
 
 export const viewport: Viewport = {
@@ -53,8 +53,8 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <Sidebar session={session} />
-        <div className="pl-14">
+        <Topbar session={session} />
+        <div>
           {children}
           <footer className="bg-neutral-600 text-white py-4">
             <div className="container mx-auto text-center">

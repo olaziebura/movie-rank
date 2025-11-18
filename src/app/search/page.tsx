@@ -1,4 +1,4 @@
-import { searchMovies } from "@/lib/tmdb/movies";
+import { discoverWithFilters } from "@/lib/tmdb/movies";
 import { SearchBar } from "@/components/SearchBar";
 import { SearchSuggestions } from "@/components/SearchSuggestions";
 import { MovieItem } from "@/components/MovieItem";
@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Search, ArrowLeft, ArrowRight, Film } from "lucide-react";
-import type { Movie } from "@/types/movie";
+import type { Movie, SearchFilters, MediaType } from "@/types/movie";
 import type { Metadata } from "next";
 import { auth0 } from "@/lib/auth/auth0";
 import { getProfile } from "@/lib/supabase/profiles";
@@ -15,6 +15,14 @@ type SearchPageProps = {
   searchParams?: Promise<{
     q?: string;
     page?: string;
+    mediaType?: string;
+    genres?: string;
+    yearFrom?: string;
+    yearTo?: string;
+    country?: string;
+    minRating?: string;
+    maxRating?: string;
+    sortBy?: string;
   }>;
 };
 
@@ -107,12 +115,46 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const query = resolvedSearchParams?.q || "";
   const page = parseInt(resolvedSearchParams?.page || "1", 10);
 
+  // Build filters from URL parameters
+  const filters: SearchFilters = {
+    query: query || undefined,
+    mediaType: (resolvedSearchParams?.mediaType as MediaType) || "movie",
+    genres: resolvedSearchParams?.genres
+      ? resolvedSearchParams.genres.split(",").map(Number)
+      : undefined,
+    releaseYearFrom: resolvedSearchParams?.yearFrom
+      ? parseInt(resolvedSearchParams.yearFrom)
+      : undefined,
+    releaseYearTo: resolvedSearchParams?.yearTo
+      ? parseInt(resolvedSearchParams.yearTo)
+      : undefined,
+    country: resolvedSearchParams?.country || undefined,
+    minRating: resolvedSearchParams?.minRating
+      ? parseFloat(resolvedSearchParams.minRating)
+      : undefined,
+    maxRating: resolvedSearchParams?.maxRating
+      ? parseFloat(resolvedSearchParams.maxRating)
+      : undefined,
+    sortBy: (resolvedSearchParams?.sortBy as SearchFilters["sortBy"]) || "popularity.desc",
+  };
+
+  const hasQuery = query.trim();
+  const hasFilters = !!(
+    filters.genres?.length ||
+    filters.releaseYearFrom ||
+    filters.releaseYearTo ||
+    filters.country ||
+    filters.minRating ||
+    filters.maxRating ||
+    (filters.mediaType && filters.mediaType !== "movie")
+  );
+
   let searchResults = null;
   let movies: Movie[] = [];
 
-  if (query.trim()) {
+  if (hasQuery || hasFilters) {
     try {
-      searchResults = await searchMovies(query, page);
+      searchResults = await discoverWithFilters(filters, page);
 
       // Convert TMDBMovie to Movie type
       movies = searchResults.results.map((movie) => ({
@@ -130,6 +172,22 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       console.error("Search failed:", error);
     }
   }
+
+  // Build URL for pagination
+  const buildPaginationUrl = (newPage: number) => {
+    const params = new URLSearchParams();
+    if (query) params.set("q", query);
+    if (filters.mediaType) params.set("mediaType", filters.mediaType);
+    if (filters.genres?.length) params.set("genres", filters.genres.join(","));
+    if (filters.releaseYearFrom) params.set("yearFrom", filters.releaseYearFrom.toString());
+    if (filters.releaseYearTo) params.set("yearTo", filters.releaseYearTo.toString());
+    if (filters.country) params.set("country", filters.country);
+    if (filters.minRating) params.set("minRating", filters.minRating.toString());
+    if (filters.maxRating) params.set("maxRating", filters.maxRating.toString());
+    if (filters.sortBy) params.set("sortBy", filters.sortBy);
+    params.set("page", newPage.toString());
+    return `/search?${params.toString()}`;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -156,7 +214,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         </div>
 
         {/* Content */}
-        {!query.trim() ? (
+        {!hasQuery && !hasFilters ? (
           <>
             <EmptySearchState />
             <SearchSuggestions className="mt-8" />
@@ -215,9 +273,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 {page > 1 && (
                   <Button asChild variant="outline">
                     <Link
-                      href={`/search?q=${encodeURIComponent(query)}&page=${
-                        page - 1
-                      }`}
+                      href={buildPaginationUrl(page - 1)}
                       className="flex items-center gap-2"
                     >
                       <ArrowLeft className="w-4 h-4" />
@@ -233,9 +289,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 {page < searchResults.total_pages && (
                   <Button asChild variant="outline">
                     <Link
-                      href={`/search?q=${encodeURIComponent(query)}&page=${
-                        page + 1
-                      }`}
+                      href={buildPaginationUrl(page + 1)}
                       className="flex items-center gap-2"
                     >
                       Next

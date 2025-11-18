@@ -90,7 +90,11 @@ export const TMDB_CONFIG = {
     UPCOMING: "/movie/upcoming",
     MOVIE_DETAILS: "/movie",
     SEARCH: "/search/movie",
+    SEARCH_MULTI: "/search/multi",
+    DISCOVER_MOVIE: "/discover/movie",
+    DISCOVER_TV: "/discover/tv",
     GENRES: "/genre/movie/list",
+    TV_GENRES: "/genre/tv/list",
   },
 
   // Request limits
@@ -146,6 +150,38 @@ export const GENRE_NAMES: Record<number, string> = {
   [GENRE_IDS.WAR]: "War",
   [GENRE_IDS.WESTERN]: "Western",
 } as const;
+
+// Countries for filtering (ISO 3166-1 alpha-2 codes)
+export const COUNTRIES = [
+  { code: "US", name: "United States" },
+  { code: "GB", name: "United Kingdom" },
+  { code: "CA", name: "Canada" },
+  { code: "AU", name: "Australia" },
+  { code: "FR", name: "France" },
+  { code: "DE", name: "Germany" },
+  { code: "IT", name: "Italy" },
+  { code: "ES", name: "Spain" },
+  { code: "JP", name: "Japan" },
+  { code: "KR", name: "South Korea" },
+  { code: "CN", name: "China" },
+  { code: "IN", name: "India" },
+  { code: "BR", name: "Brazil" },
+  { code: "MX", name: "Mexico" },
+  { code: "AR", name: "Argentina" },
+  { code: "RU", name: "Russia" },
+  { code: "PL", name: "Poland" },
+  { code: "SE", name: "Sweden" },
+  { code: "NO", name: "Norway" },
+  { code: "DK", name: "Denmark" },
+  { code: "FI", name: "Finland" },
+  { code: "NL", name: "Netherlands" },
+  { code: "BE", name: "Belgium" },
+  { code: "CH", name: "Switzerland" },
+  { code: "AT", name: "Austria" },
+  { code: "IE", name: "Ireland" },
+  { code: "NZ", name: "New Zealand" },
+  { code: "ZA", name: "South Africa" },
+] as const;
 
 // Movie Categories
 export const MOVIE_CATEGORIES = {
@@ -321,3 +357,49 @@ export const RECOMMENDATIONS_CONFIG = {
   POPULARITY_THRESHOLD: 10.0,
   MAX_RETRIES: 3,
 } as const;
+
+// Movie Filter Presets
+export const MOVIE_FILTER_PRESETS = {
+  topRated: {
+    minRating: 7.5,
+    minVoteCount: 1000,
+    sortBy: "rating" as const,
+    sortOrder: "desc" as const,
+  },
+
+  popular: {
+    sortBy: "popularity" as const,
+    sortOrder: "desc" as const,
+  },
+
+  recent: {
+    yearRange: {
+      start: new Date().getFullYear() - 1,
+    },
+    sortBy: "release_date" as const,
+    sortOrder: "desc" as const,
+  },
+
+  familyFriendly: {
+    genres: [16, 10751, 35], // Animation, Family, Comedy
+    maxRating: 8.0,
+    excludeGenres: [27, 53], // Horror, Thriller
+  },
+
+  actionPacked: {
+    genres: [28, 12, 878], // Action, Adventure, Sci-Fi
+    minRating: 6.0,
+  },
+
+  dramatic: {
+    genres: [18, 36, 10752], // Drama, History, War
+    minRating: 7.0,
+  },
+
+  lightHearted: {
+    genres: [35, 10749], // Comedy, Romance
+    minRating: 6.5,
+  },
+} as const;
+
+export type FilterPresetName = keyof typeof MOVIE_FILTER_PRESETS;

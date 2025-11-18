@@ -4,7 +4,6 @@ import {
   getProfile,
   upsertProfileFromAuth0Session,
 } from "@/lib/supabase/profiles";
-import { PopularMovies } from "@/components/homepage/PopularMovies";
 import { Hero } from "@/components/homepage/Hero";
 import { UpcomingMoviesCarousel } from "@/components/homepage/UpcomingMoviesCarousel";
 
@@ -28,13 +27,8 @@ export default async function HomePage() {
 
   return (
     <main>
-      <Hero />
+      <Hero session={session} profile={profile} popularMovies={sortedResults} />
       <UpcomingMoviesCarousel />
-      <PopularMovies
-        profile={profile}
-        session={session}
-        movies={sortedResults}
-      />
     </main>
   );
 }

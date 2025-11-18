@@ -5,6 +5,7 @@ import type {
   TMDBResponse,
   MovieRecord,
   MovieDetails,
+  SearchFilters,
 } from "@/types/movie";
 
 export async function getPopularMovies(page = 1): Promise<TMDBResponse> {
@@ -52,6 +53,76 @@ export async function searchMovies(
     query,
     page,
   }) as Promise<TMDBResponse>;
+}
+
+export async function discoverWithFilters(
+  filters: SearchFilters,
+  page = 1
+): Promise<TMDBResponse> {
+  const params: Record<string, string | number> = {
+    page,
+    sort_by: filters.sortBy || "popularity.desc",
+  };
+
+  console.log("discoverWithFilters called with:", { filters, page });
+
+  // Add query if searching by text
+  if (filters.query && filters.query.trim()) {
+    // Use search endpoint if we have a text query
+    return tmdbFetch(TMDB_CONFIG.ENDPOINTS.SEARCH, {
+      query: filters.query,
+      page,
+    }) as Promise<TMDBResponse>;
+  }
+
+  // Use discover endpoint for filtering - always use movies
+  const endpoint = TMDB_CONFIG.ENDPOINTS.DISCOVER_MOVIE;
+
+  console.log("Using endpoint:", endpoint);
+
+  // Genre filter
+  if (filters.genres && filters.genres.length > 0) {
+    params.with_genres = filters.genres.join(",");
+  }
+
+  // Date range filters - use release_date for movies
+  if (filters.releaseYearFrom) {
+    params["release_date.gte"] = `${filters.releaseYearFrom}-01-01`;
+  }
+  if (filters.releaseYearTo) {
+    params["release_date.lte"] = `${filters.releaseYearTo}-12-31`;
+  }
+
+  // Rating filter
+  if (filters.minRating !== undefined) {
+    params["vote_average.gte"] = filters.minRating;
+  }
+  if (filters.maxRating !== undefined) {
+    params["vote_average.lte"] = filters.maxRating;
+  }
+
+  // Country filter (production country)
+  if (filters.country) {
+    params.with_origin_country = filters.country;
+  }
+
+  // Ensure we have a minimum vote count for relevance
+  params["vote_count.gte"] = 10;
+
+  console.log("Final params for TMDB:", params);
+
+  try {
+    const result = await tmdbFetch(endpoint, params) as TMDBResponse;
+    console.log("TMDB Response:", { 
+      endpoint,
+      resultsCount: result.results.length,
+      totalResults: result.total_results 
+    });
+    return result;
+  } catch (error) {
+    console.error("TMDB Fetch Error:", { endpoint, params, error });
+    throw error;
+  }
 }
 
 export async function searchMoviesEnhanced(

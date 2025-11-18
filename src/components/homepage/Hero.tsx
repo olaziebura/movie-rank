@@ -2,7 +2,15 @@
 
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { SearchBar } from "@/components/SearchBar";
+import { HeroWithResults } from "./HeroWithResults";
+import type { UserProfile } from "@/types/user";
+import type { Movie } from "@/types/movie";
+
+type HeroProps = {
+  session?: unknown;
+  profile?: UserProfile | null;
+  popularMovies?: Movie[] | null;
+};
 
 // Pre-defined positions to avoid hydration mismatch
 const PARTICLE_CONFIGS = [
@@ -20,7 +28,7 @@ const PARTICLE_CONFIGS = [
   { x: 850, y: 420, duration: 19, delay: 2.8 },
 ];
 
-export const Hero = () => {
+export const Hero = ({ session, profile, popularMovies }: HeroProps = {}) => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -28,34 +36,36 @@ export const Hero = () => {
   }, []);
 
   return (
-    <section className="relative flex flex-col items-center justify-center bg-neutral-800 text-white py-12 px-6 overflow-hidden min-h-[600px]">
+    <section className="relative flex flex-col items-center justify-center bg-neutral-800 text-white py-12 px-6 min-h-[600px]">
       <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-neutral-600 to-neutral-800 z-0" />
 
-      {mounted &&
-        PARTICLE_CONFIGS.map((config, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-2 h-2 rounded-full bg-yellow-400/60"
-            initial={{
-              x: config.x,
-              y: config.y,
-              opacity: 0.3,
-            }}
-            animate={{
-              y: -100,
-              opacity: 0,
-            }}
-            transition={{
-              duration: config.duration,
-              repeat: Infinity,
-              delay: config.delay,
-              ease: "linear",
-            }}
-            aria-hidden="true"
-          />
-        ))}
+      <div className="absolute inset-0 overflow-hidden">
+        {mounted &&
+          PARTICLE_CONFIGS.map((config, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-2 h-2 rounded-full bg-yellow-400/60"
+              initial={{
+                x: config.x,
+                y: config.y,
+                opacity: 0.3,
+              }}
+              animate={{
+                y: -100,
+                opacity: 0,
+              }}
+              transition={{
+                duration: config.duration,
+                repeat: Infinity,
+                delay: config.delay,
+                ease: "linear",
+              }}
+              aria-hidden="true"
+            />
+          ))}
+      </div>
 
-      <div className="relative z-10 w-full max-w-7xl">
+      <div className="relative z-10 w-full pb-8">
         {/* Hero Content */}
         <div className="text-center mb-12">
           <motion.h1 
@@ -75,19 +85,20 @@ export const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            Search through thousands of movies or let AI help you find the perfect film for your mood
+            Search through thousands of movies and TV shows with advanced filters
           </motion.p>
 
-          {/* Search Bar */}
+          {/* Search Bar with Filters */}
           <motion.div 
-            className="max-w-2xl mx-auto mb-8"
+            className="w-full mx-auto mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            <SearchBar 
-              placeholder="Search for movies, actors, directors..."
-              className="w-full"
+            <HeroWithResults 
+              session={session} 
+              profile={profile || null}
+              popularMovies={popularMovies || null}
             />
           </motion.div>
         </div>

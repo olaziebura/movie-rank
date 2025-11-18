@@ -30,7 +30,7 @@ export function SearchBar({
   placeholder = "Search for movies...", 
   className = "",
   onSearchStart,
-  onSearchComplete
+  onSearchComplete,
 }: SearchBarProps) {
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -76,13 +76,20 @@ export function SearchBar({
     onSearchStart?.();
 
     try {
-      const response = await fetch(`/api/search/movies?q=${encodeURIComponent(searchQuery)}&page=1`);
+      // Build query parameters - simple search only
+      const params = new URLSearchParams();
+      params.set("q", searchQuery.trim());
+      params.set("mediaType", "all");
+      params.set("sortBy", "popularity.desc");
+      params.set("page", "1");
+
+      const response = await fetch(`/api/search/movies?${params.toString()}`);
       const data = await response.json();
       
       if (response.ok) {
         setResults(data);
         setShowResults(true);
-        saveRecentSearch(searchQuery);
+        if (searchQuery.trim()) saveRecentSearch(searchQuery.trim());
         onSearchComplete?.(data);
       } else {
         console.error("Search failed:", data.error);
@@ -156,7 +163,12 @@ export function SearchBar({
     if (e.key === 'Enter' && query.trim().length > 0) {
       setShowResults(false);
       saveRecentSearch(query.trim());
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+      
+      // Build URL with query only
+      const params = new URLSearchParams();
+      params.set("q", query.trim());
+      
+      router.push(`/search?${params.toString()}`);
     }
   }, [query, router, saveRecentSearch]);
 
@@ -172,7 +184,12 @@ export function SearchBar({
     if (query.trim().length > 0) {
       setShowResults(false);
       saveRecentSearch(query.trim());
-      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
+      
+      // Build URL with query only
+      const params = new URLSearchParams();
+      params.set("q", query.trim());
+      
+      router.push(`/search?${params.toString()}`);
     }
   };
 
