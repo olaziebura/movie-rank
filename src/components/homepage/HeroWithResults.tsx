@@ -204,6 +204,7 @@ export function HeroWithResults({
                         }}
                         session={session as never}
                         profile={profile}
+                        userId={profile?.id}
                         variant="single"
                       />
                     ))}

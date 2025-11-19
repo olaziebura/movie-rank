@@ -14,6 +14,7 @@ export function useUserProfile() {
   const [profile, setProfile] = useState<UserProfile | null>(profileCache);
   const [loading, setLoading] = useState(!profileCache);
   const [error, setError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const fetchProfile = async () => {
     try {
@@ -26,6 +27,7 @@ export function useUserProfile() {
         if (response.status === 401) {
           // User not authenticated
           setProfile(null);
+          setUserId(null);
           profileCache = null;
           return;
         }
@@ -34,6 +36,7 @@ export function useUserProfile() {
       
       const data = await response.json();
       setProfile(data.profile);
+      setUserId(data.profile?.id || null);
       profileCache = data.profile;
       cacheInvalidated = false;
     } catch (err) {
@@ -48,11 +51,15 @@ export function useUserProfile() {
   useEffect(() => {
     if (!profileCache || cacheInvalidated) {
       fetchProfile();
+    } else {
+      // Set userId from cache
+      setUserId(profileCache?.id || null);
     }
   }, []);
 
   return {
     profile,
+    userId,
     loading,
     error,
     refetch: fetchProfile,

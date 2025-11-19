@@ -43,6 +43,7 @@ export const PopularMovies = ({
             key={movie.id}
             profile={profile}
             session={session}
+            userId={profile?.id}
             movie={movie}
             variant="single"
           />

@@ -102,10 +102,12 @@ export function FilterPanel({
             }
             className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs bg-white h-8"
           >
-            <option value="popularity.desc">Most Popular</option>
-            <option value="vote_average.desc">Highest Rated</option>
-            <option value="release_date.desc">Newest First</option>
-            <option value="release_date.asc">Oldest First</option>
+            <option value="popularity.desc">🔥 Most Popular</option>
+            <option value="popularity.asc">📉 Least Popular</option>
+            <option value="vote_average.desc">⭐ Highest Rated</option>
+            <option value="vote_average.asc">📊 Lowest Rated</option>
+            <option value="release_date.desc">🆕 Newest First</option>
+            <option value="release_date.asc">🕰️ Oldest First</option>
           </select>
         </div>
 
@@ -170,20 +172,32 @@ export function FilterPanel({
 
           {/* Min Rating */}
           <div>
-            <Label className="text-xs font-medium text-gray-700 mb-2 block">
-              Minimum Rating
-            </Label>
+            <div className="flex items-center justify-between mb-2">
+              <Label className="text-xs font-medium text-gray-700">
+                Minimum Rating {filters.minRating ? `(${filters.minRating}+)` : ""}
+              </Label>
+              {filters.minRating && (
+                <button
+                  onClick={() => handleRatingChange(undefined, filters.maxRating)}
+                  className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                >
+                  <X className="w-3 h-3" />
+                  Clear
+                </button>
+              )}
+            </div>
             <div className="flex gap-1 justify-between">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
                 <button
                   key={rating}
                   onClick={() => handleRatingChange(rating, filters.maxRating)}
-                  className={`transition-colors ${
+                  className={`transition-all transform hover:scale-110 ${
                     filters.minRating && rating <= filters.minRating
                       ? "text-yellow-400"
                       : "text-gray-300 hover:text-yellow-200"
                   }`}
                   aria-label={`${rating} stars`}
+                  title={`${rating} stars minimum`}
                 >
                   <Star
                     className="w-5 h-5"
@@ -196,27 +210,35 @@ export function FilterPanel({
                 </button>
               ))}
             </div>
-            {filters.minRating && (
-              <p className="text-xs text-gray-500 mt-1">
-                {filters.minRating}+ stars
-              </p>
-            )}
+            <div className="flex justify-between mt-1 px-1">
+              <span className="text-[10px] text-gray-400">1</span>
+              <span className="text-[10px] text-gray-400">5</span>
+              <span className="text-[10px] text-gray-400">10</span>
+            </div>
           </div>
         </div>
 
         <div>
           <Label className="text-xs font-medium text-gray-700 mb-2 block">
             Genres{" "}
-            {selectedGenres.length > 0 && `(${selectedGenres.length} selected)`}
+            {selectedGenres.length > 0 && (
+              <span className="text-blue-600">
+                ({selectedGenres.length} selected)
+              </span>
+            )}
           </Label>
-          <div className="flex flex-wrap  gap-2 pb-2">
+          <div className="flex flex-wrap gap-2 pb-2">
             {Object.entries(GENRE_IDS).map(([, id]) => (
               <Button
                 key={id}
                 variant={selectedGenres.includes(id) ? "default" : "outline"}
                 size="sm"
                 onClick={() => handleGenreToggle(id)}
-                className="text-xs whitespace-nowrap h-8 flex-shrink-0"
+                className={`text-xs whitespace-nowrap h-8 flex-shrink-0 transition-all ${
+                  selectedGenres.includes(id)
+                    ? "bg-blue-600 text-white hover:bg-blue-700 shadow-md"
+                    : "hover:bg-blue-50 hover:border-blue-300"
+                }`}
               >
                 {GENRE_NAMES[id]}
               </Button>

@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import Image from "next/image";
+import { WishlistButton } from "@/components/WishlistButton";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import type {
   FeaturedUpcomingMovie,
   FeaturedUpcomingSortBy,
@@ -36,6 +38,7 @@ export default function TopUpcomingMovies({
   showStats = false,
   className = "",
 }: TopUpcomingMoviesProps) {
+  const { profile, userId } = useUserProfile();
   const [movies, setMovies] = useState<FeaturedUpcomingMovie[]>([]);
   const [stats, setStats] = useState<FeaturedUpcomingMoviesResponse["stats"]>();
   const [loading, setLoading] = useState(true);
@@ -262,7 +265,7 @@ export default function TopUpcomingMovies({
             <CardContent className="p-4">
               <div className="flex gap-4">
                 {/* Poster */}
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 relative">
                   {movie.poster_path ? (
                     <Image
                       src={`https://image.tmdb.org/t/p/w200${movie.poster_path}`}
@@ -274,6 +277,17 @@ export default function TopUpcomingMovies({
                   ) : (
                     <div className="w-20 h-30 bg-neutral-700 rounded flex items-center justify-center">
                       <span className="text-neutral-500 text-xs">No Image</span>
+                    </div>
+                  )}
+                  
+                  {/* Wishlist button */}
+                  {userId && profile && (
+                    <div className="absolute top-1 right-1">
+                      <WishlistButton
+                        userId={userId}
+                        movieId={movie.id}
+                        initialIsInWishlist={profile.wishlist.includes(movie.id)}
+                      />
                     </div>
                   )}
                 </div>

@@ -15,6 +15,7 @@ type MovieItemProps = {
   position?: number;
   session?: SessionData | null;
   profile?: UserProfile | null;
+  userId?: string | null;
   variant?: "single" | "list";
 };
 
@@ -23,6 +24,7 @@ export const MovieItem = ({
   position,
   session,
   profile,
+  userId,
 }: MovieItemProps) => {
   const router = useRouter();
   const {
@@ -146,13 +148,13 @@ export const MovieItem = ({
         </div>
 
         {/* Wishlist button */}
-        {session?.user && profile && (
+        {(userId || session?.user) && profile && (
           <div
             className="absolute top-3 right-3 z-20"
             onClick={handleWishlistClick}
           >
             <WishlistButton
-              userId={session.user.sub || session.user.id}
+              userId={userId || session?.user?.sub || session?.user?.id}
               movieId={id}
               initialIsInWishlist={isInWishlist}
             />

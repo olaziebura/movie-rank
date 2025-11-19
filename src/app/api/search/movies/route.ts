@@ -40,21 +40,42 @@ export async function GET(request: NextRequest) {
       filters.country ||
       filters.minRating ||
       filters.maxRating ||
-      (filters.sortBy && filters.sortBy !== "popularity.desc"); // Count non-default sorting as a filter
+      (filters.sortBy && filters.sortBy !== "popularity.desc");
 
+    // If no query or filters, show popular movies (discover endpoint with default sorting)
     if (!hasQuery && !hasFilters) {
-      return NextResponse.json(
-        { error: "Please provide a search query or select filters" },
-        { status: 400 }
-      );
+      filters.sortBy = filters.sortBy || "popularity.desc";
     }
+
+    console.log(`[API] Search request - Query: "${filters.query || 'none'}", Filters: ${JSON.stringify({
+      genres: filters.genres?.length || 0,
+      yearRange: filters.releaseYearFrom || filters.releaseYearTo ? `${filters.releaseYearFrom || '*'}-${filters.releaseYearTo || '*'}` : 'none',
+      country: filters.country || 'none',
+      minRating: filters.minRating || 'none',
+      maxRating: filters.maxRating || 'none',
+      sortBy: filters.sortBy || 'default'
+    })}`);
 
     const results = await discoverWithFilters(filters, page);
 
-    // Filter results by year range (client-side validation)
-    const filteredResults = results.results.filter((movie) =>
-      isMovieInYearRange(movie.release_date, filters.releaseYearFrom, filters.releaseYearTo)
-    );
+    // Filter results by year range and rating (client-side validation for search queries)
+    const filteredResults = results.results.filter((movie) => {
+      // Year range filter
+      const passesYear = isMovieInYearRange(
+        movie.release_date, 
+        filters.releaseYearFrom, 
+        filters.releaseYearTo
+      );
+      
+      // Rating filter (additional client-side validation)
+      const rating = movie.vote_average || 0;
+      const passesMinRating = filters.minRating === undefined || rating >= filters.minRating;
+      const passesMaxRating = filters.maxRating === undefined || rating <= filters.maxRating;
+      
+      return passesYear && passesMinRating && passesMaxRating;
+    });
+
+    console.log(`[API] Filtered results: ${results.results.length} → ${filteredResults.length} movies`);
 
     return NextResponse.json({
       success: true,

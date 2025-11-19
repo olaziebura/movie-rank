@@ -64,11 +64,74 @@ export async function discoverWithFilters(
     sort_by: filters.sortBy || "popularity.desc",
   };
 
+  // If there's a text query, use search endpoint (doesn't support sorting or rating filters)
   if (filters.query && filters.query.trim()) {
-    return tmdbFetch(TMDB_CONFIG.ENDPOINTS.SEARCH, {
+    console.log(`[TMDB] Using search endpoint with query: "${filters.query}"`);
+    const searchResults = await tmdbFetch(TMDB_CONFIG.ENDPOINTS.SEARCH, {
       query: filters.query,
       page,
-    }) as Promise<TMDBResponse>;
+    }) as TMDBResponse;
+
+    console.log(`[TMDB] Search returned ${searchResults.results.length} results`);
+
+    // Apply client-side filtering for ratings (search endpoint doesn't support it)
+    let filteredResults = searchResults.results;
+    
+    if (filters.minRating !== undefined || filters.maxRating !== undefined) {
+      console.log(`[TMDB] Applying rating filter: min=${filters.minRating}, max=${filters.maxRating}`);
+      const beforeCount = filteredResults.length;
+      
+      filteredResults = filteredResults.filter((movie) => {
+        const rating = movie.vote_average || 0;
+        const passesMin = filters.minRating === undefined || rating >= filters.minRating;
+        const passesMax = filters.maxRating === undefined || rating <= filters.maxRating;
+        return passesMin && passesMax;
+      });
+      
+      console.log(`[TMDB] Rating filter: ${beforeCount} → ${filteredResults.length} movies`);
+    }
+
+    // Apply client-side sorting if sortBy is specified and not default
+    if (filters.sortBy && filters.sortBy !== "popularity.desc") {
+      const sortedResults = [...filteredResults].sort((a, b) => {
+        const [field, direction] = filters.sortBy!.split(".") as [string, "asc" | "desc"];
+        
+        let valueA: number | string = 0;
+        let valueB: number | string = 0;
+
+        switch (field) {
+          case "popularity":
+            valueA = a.popularity || 0;
+            valueB = b.popularity || 0;
+            break;
+          case "vote_average":
+            valueA = a.vote_average || 0;
+            valueB = b.vote_average || 0;
+            break;
+          case "release_date":
+            valueA = new Date(a.release_date || 0).getTime();
+            valueB = new Date(b.release_date || 0).getTime();
+            break;
+          default:
+            valueA = a.popularity || 0;
+            valueB = b.popularity || 0;
+        }
+
+        if (direction === "asc") {
+          return valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
+        } else {
+          return valueA < valueB ? 1 : valueA > valueB ? -1 : 0;
+        }
+      });
+
+      filteredResults = sortedResults;
+    }
+
+    return {
+      ...searchResults,
+      results: filteredResults,
+      total_results: filteredResults.length,
+    };
   }
 
   const endpoint = TMDB_CONFIG.ENDPOINTS.DISCOVER_MOVIE;

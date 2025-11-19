@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { WishlistButton } from "@/components/WishlistButton";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import Image from "next/image";
 import Link from "next/link";
 import type { FeaturedUpcomingMovie } from "@/lib/supabase/upcomingMovies";
@@ -14,6 +16,7 @@ interface UpcomingMoviesCarouselProps {
 export function UpcomingMoviesCarousel({
   className = "",
 }: UpcomingMoviesCarouselProps) {
+  const { profile, userId } = useUserProfile();
   const [movies, setMovies] = useState<FeaturedUpcomingMovie[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -210,6 +213,17 @@ export function UpcomingMoviesCarousel({
                         <div className="absolute -top-3 -left-3 bg-yellow-500 text-black px-3 py-1 rounded-full font-bold text-lg">
                           {getRankEmoji(currentMovie.rank_position)}
                         </div>
+                        
+                        {/* Wishlist button on poster */}
+                        {userId && profile && (
+                          <div className="absolute top-3 right-3 bg-black/50 rounded-full p-1 backdrop-blur-sm">
+                            <WishlistButton
+                              userId={userId}
+                              movieId={currentMovie.id}
+                              initialIsInWishlist={profile.wishlist.includes(currentMovie.id)}
+                            />
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="w-72 h-96 bg-neutral-700 rounded-lg flex items-center justify-center">
@@ -256,12 +270,6 @@ export function UpcomingMoviesCarousel({
                           See All Top 10
                         </Button>
                       </Link>
-                      <Button
-                        variant="outline"
-                        className="border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-black px-6 py-3"
-                      >
-                        Add to Wishlist
-                      </Button>
                     </div>
                   </div>
                 </div>
@@ -341,13 +349,29 @@ export function UpcomingMoviesCarousel({
                 <CardContent className="p-3">
                   <div className="relative">
                     {movie.poster_path ? (
-                      <Image
-                        src={`https://image.tmdb.org/t/p/w300${movie.poster_path}`}
-                        alt={movie.title}
-                        width={200}
-                        height={300}
-                        className="w-full h-48 object-cover rounded mb-2"
-                      />
+                      <>
+                        <Image
+                          src={`https://image.tmdb.org/t/p/w300${movie.poster_path}`}
+                          alt={movie.title}
+                          width={200}
+                          height={300}
+                          className="w-full h-48 object-cover rounded mb-2"
+                        />
+                        
+                        {/* Wishlist button */}
+                        {userId && profile && (
+                          <div 
+                            className="absolute top-2 right-2 bg-black/50 rounded-full p-1 backdrop-blur-sm"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <WishlistButton
+                              userId={userId}
+                              movieId={movie.id}
+                              initialIsInWishlist={profile.wishlist.includes(movie.id)}
+                            />
+                          </div>
+                        )}
+                      </>
                     ) : (
                       <div className="w-full h-48 bg-neutral-700 rounded mb-2 flex items-center justify-center">
                         <span className="text-neutral-500 text-xs">

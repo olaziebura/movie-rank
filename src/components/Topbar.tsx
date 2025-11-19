@@ -83,11 +83,9 @@ export const Topbar = ({ session }: TopbarProps) => {
     // Optional: handle search start
   };
 
-  const handleSearchComplete = (results: unknown) => {
-    // If search is performed from topbar, redirect to search page
-    if (results) {
-      router.push("/search");
-    }
+  const handleSearchComplete = () => {
+    // Search complete - results will be shown on the dropdown
+    // No need to redirect here, as the SearchBar handles it internally
   };
 
   return (

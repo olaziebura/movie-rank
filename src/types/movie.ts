@@ -118,7 +118,15 @@ export type SearchFilters = {
   country?: string;
   minRating?: number;
   maxRating?: number;
-  sortBy?: "popularity.desc" | "popularity.asc" | "release_date.desc" | "release_date.asc" | "vote_average.desc" | "vote_average.asc";
+  sortBy?: 
+    | "popularity.desc" 
+    | "popularity.asc" 
+    | "release_date.desc" 
+    | "release_date.asc" 
+    | "vote_average.desc" 
+    | "vote_average.asc"
+    | "title.asc"
+    | "title.desc";
 };
 
 export type Genre = {

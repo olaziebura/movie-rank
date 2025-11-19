@@ -161,6 +161,7 @@ export function SearchBar({
   // Handle Enter key press to redirect to search page
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && query.trim().length > 0) {
+      e.preventDefault();
       setShowResults(false);
       saveRecentSearch(query.trim());
       
