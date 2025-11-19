@@ -23,7 +23,13 @@ export default async function AdminDevPage() {
     );
   }
 
-  const profile = await getProfile(session.user.sub);
+  let profile = null;
+  try {
+    profile = await getProfile(session.user.sub);
+  } catch (e) {
+    console.error("Failed to fetch profile in AdminDevPage:", e);
+    // Continue with null profile
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">

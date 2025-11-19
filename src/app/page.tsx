@@ -10,7 +10,16 @@ import { UpcomingMoviesCarousel } from "@/components/homepage/UpcomingMoviesCaro
 export default async function HomePage() {
   const session = await auth0.getSession();
   const userId = session?.user.sub ?? session?.user.id;
-  const profile = await getProfile(userId);
+  
+  let profile = null;
+  if (userId) {
+    try {
+      profile = await getProfile(userId);
+    } catch (e) {
+      console.error("Failed to fetch profile in HomePage:", e);
+      // Continue with null profile - page should still load
+    }
+  }
 
   if (session) {
     try {

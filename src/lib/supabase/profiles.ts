@@ -1,7 +1,6 @@
 import type { SessionData } from "@auth0/nextjs-auth0/types";
 import { supabase } from "./supabase";
 import type { UserProfile } from "@/types/user";
-import { MovieRankError, ErrorType } from "@/lib/utils/errorHandler";
 
 /**
  * Retrieves user profile by ID.
@@ -9,6 +8,12 @@ import { MovieRankError, ErrorType } from "@/lib/utils/errorHandler";
  * @returns Promise resolving to user profile or null if not found
  */
 export async function getProfile(userId: string): Promise<UserProfile | null> {
+  // Validate userId
+  if (!userId || userId === 'undefined' || userId === 'null') {
+    console.warn('getProfile called with invalid userId:', userId);
+    return null;
+  }
+
   try {
     const { data, error } = await supabase
       .from("profiles")
@@ -18,32 +23,33 @@ export async function getProfile(userId: string): Promise<UserProfile | null> {
 
     if (error) {
       if (error.code === "PGRST116") {
+        // Profile not found - this is not an error, just return null
         return null;
       }
 
-      throw new MovieRankError(
-        ErrorType.DATABASE_ERROR,
-        "Failed to fetch user profile",
-        500,
-        "PROFILE_FETCH_ERROR",
-        { userId, supabaseError: error.message }
-      );
+      // Log the error but don't throw - return null instead
+      console.error('Supabase error in getProfile:', {
+        userId,
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      });
+      
+      // Return null instead of throwing to prevent app crashes
+      return null;
     }
 
     return data;
   } catch (error) {
-    if (error instanceof MovieRankError) {
-      throw error;
-    }
-
-    throw new MovieRankError(
-      ErrorType.DATABASE_ERROR,
-      "Unexpected error fetching profile",
-      500,
-      "PROFILE_FETCH_UNEXPECTED_ERROR",
-      { userId },
-      error instanceof Error ? error : undefined
-    );
+    // Log unexpected errors but don't throw
+    console.error('Unexpected error in getProfile:', {
+      userId,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+    
+    // Return null to allow the app to continue functioning
+    return null;
   }
 }
 
@@ -199,13 +205,10 @@ export async function setUserAdminStatus(
     const profile = await getProfile(userId);
 
     if (!profile) {
-      throw new MovieRankError(
-        ErrorType.NOT_FOUND_ERROR,
-        "User profile not found",
-        404,
-        "PROFILE_NOT_FOUND",
-        { userId }
-      );
+      return {
+        success: false,
+        error: "User profile not found",
+      };
     }
 
     const updatedProfile = { ...profile, admin: isAdmin };

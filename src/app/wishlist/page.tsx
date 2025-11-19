@@ -130,7 +130,15 @@ export default async function WishlistPage({
   }
 
   const userId = session.user.sub ?? session.user.id;
-  const profile = await getProfile(userId);
+  
+  let profile = null;
+  try {
+    profile = await getProfile(userId);
+  } catch (e) {
+    console.error("Failed to fetch profile in WishlistPage:", e);
+    // Continue with null profile
+  }
+  
   const wishlist = profile?.wishlist ?? [];
 
   if (!wishlist.length) {

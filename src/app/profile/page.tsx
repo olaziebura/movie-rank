@@ -34,7 +34,16 @@ export default async function ProfilePage() {
   }
 
   const userId = session.user.sub || session.user.id;
-  const userProfile = userId ? await getProfile(userId) : null;
+  
+  let userProfile = null;
+  if (userId) {
+    try {
+      userProfile = await getProfile(userId);
+    } catch (e) {
+      console.error("Failed to fetch profile in ProfilePage:", e);
+      // Continue with null profile - page should still load
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
