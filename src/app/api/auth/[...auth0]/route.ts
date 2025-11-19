@@ -1,27 +1,43 @@
-import { NextRequest, NextResponse } from "next/server";
+import { auth0 } from '@/lib/auth/auth0';
+import { NextRequest, NextResponse } from 'next/server';
 
-// Temporary stub implementation for Auth0 routes
-// This will allow the build to succeed while Auth0 configuration is being resolved
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ auth0: string[] }> }
+) {
+  const { auth0: segments } = await params;
+  const action = segments?.[0] || 'login';
 
-export async function GET(request: NextRequest) {
-  const url = new URL(request.url);
-  const pathname = url.pathname;
-  
-  // Extract the auth action from the URL
-  const segments = pathname.split('/');
-  const action = segments[segments.length - 1];
-  
-  console.log('Auth0 route called:', action);
-  
-  // For now, return a simple response indicating the route was called
-  // In a real implementation, this would handle login, logout, callback, etc.
-  return NextResponse.json({ 
-    message: `Auth0 ${action} route called`,
-    action,
-    pathname 
-  });
-}
+  try {
+    // Handle login
+    if (action === 'login') {
+      const returnTo = req.nextUrl.searchParams.get('returnTo') || '/';
+      return auth0.startInteractiveLogin({
+        returnTo,
+      });
+    }
 
-export async function POST(request: NextRequest) {
-  return GET(request);
+    // Handle logout
+    if (action === 'logout') {
+      // For now, just redirect to home
+      // You'll need to implement proper logout
+      return NextResponse.redirect(new URL('/', req.url));
+    }
+
+    // Handle callback
+    if (action === 'callback') {
+      // Handle the callback after successful authentication
+      const callbackUrl = new URL(req.url);
+      // Process the callback and redirect
+      return NextResponse.redirect(new URL('/', req.url));
+    }
+
+    return NextResponse.json({ error: 'Invalid auth action' }, { status: 400 });
+  } catch (error) {
+    console.error('Auth error:', error);
+    return NextResponse.json(
+      { error: 'Authentication failed' },
+      { status: 500 }
+    );
+  }
 }
