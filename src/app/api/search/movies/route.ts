@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { discoverWithFilters } from "@/lib/tmdb/movies";
 import type { SearchFilters } from "@/types/movie";
+import { isMovieInYearRange } from "@/lib/utils/movieFilters";
 
 export async function GET(request: NextRequest) {
   try {
@@ -50,14 +51,19 @@ export async function GET(request: NextRequest) {
 
     const results = await discoverWithFilters(filters, page);
 
+    // Filter results by year range (client-side validation)
+    const filteredResults = results.results.filter((movie) =>
+      isMovieInYearRange(movie.release_date, filters.releaseYearFrom, filters.releaseYearTo)
+    );
+
     return NextResponse.json({
       success: true,
       query: filters.query || "",
       filters,
       page,
       total_pages: results.total_pages,
-      total_results: results.total_results,
-      results: results.results,
+      total_results: filteredResults.length,
+      results: filteredResults,
     });
   } catch (error) {
     console.error("Error searching movies:", error);

@@ -116,7 +116,14 @@ export async function discoverWithFilters(
     console.log("TMDB Response:", { 
       endpoint,
       resultsCount: result.results.length,
-      totalResults: result.total_results 
+      totalResults: result.total_results,
+      params,
+      // Log first 3 movies with their release dates for debugging
+      sampleMovies: result.results.slice(0, 3).map(m => ({
+        title: m.title,
+        release_date: m.release_date,
+        id: m.id
+      }))
     });
     return result;
   } catch (error) {

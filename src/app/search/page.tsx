@@ -10,6 +10,7 @@ import type { Movie, SearchFilters, MediaType } from "@/types/movie";
 import type { Metadata } from "next";
 import { auth0 } from "@/lib/auth/auth0";
 import { getProfile } from "@/lib/supabase/profiles";
+import { isMovieInYearRange } from "@/lib/utils/movieFilters";
 
 type SearchPageProps = {
   searchParams?: Promise<{
@@ -157,18 +158,22 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     try {
       searchResults = await discoverWithFilters(filters, page);
 
-      // Convert TMDBMovie to Movie type
-      movies = searchResults.results.map((movie) => ({
-        id: movie.id,
-        title: movie.title,
-        poster_path: movie.poster_path,
-        vote_average: movie.vote_average,
-        release_date: movie.release_date,
-        vote_count: movie.vote_count,
-        overview: movie.overview,
-        genres: movie.genre_ids || [],
-        popularity: movie.popularity,
-      }));
+      // Convert TMDBMovie to Movie type and filter by year range (client-side validation)
+      movies = searchResults.results
+        .filter((movie) => 
+          isMovieInYearRange(movie.release_date, filters.releaseYearFrom, filters.releaseYearTo)
+        )
+        .map((movie) => ({
+          id: movie.id,
+          title: movie.title,
+          poster_path: movie.poster_path,
+          vote_average: movie.vote_average,
+          release_date: movie.release_date,
+          vote_count: movie.vote_count,
+          overview: movie.overview,
+          genres: movie.genre_ids || [],
+          popularity: movie.popularity,
+        }));
     } catch (error) {
       console.error("Search failed:", error);
     }
