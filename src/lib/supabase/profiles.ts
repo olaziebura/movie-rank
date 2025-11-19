@@ -1,5 +1,5 @@
 import type { SessionData } from "@auth0/nextjs-auth0/types";
-import { supabase } from "./supabase";
+import { supabaseAdmin } from "./supabaseAdmin";
 import type { UserProfile } from "@/types/user";
 
 /**
@@ -15,7 +15,8 @@ export async function getProfile(userId: string): Promise<UserProfile | null> {
   }
 
   try {
-    const { data, error } = await supabase
+    // Use supabaseAdmin to bypass RLS since we're using Auth0 authentication
+    const { data, error } = await supabaseAdmin
       .from("profiles")
       .select("*")
       .eq("id", userId)
@@ -27,9 +28,12 @@ export async function getProfile(userId: string): Promise<UserProfile | null> {
         return null;
       }
 
-      // Log the error but don't throw - return null instead
-      console.error('Supabase error in getProfile:', {
+      // Log the error with full context but don't throw - return null instead
+      console.error('[ Server ] Supabase error in getProfile:', {
         userId,
+        error: JSON.stringify(error, null, 2),
+        errorString: String(error),
+        errorKeys: Object.keys(error),
         code: error.code,
         message: error.message,
         details: error.details,
@@ -64,7 +68,8 @@ export async function updateProfile(
   profile: UserProfile
 ): Promise<{ success: boolean; data?: unknown; error?: unknown; warning?: string }> {
   try {
-    const { data, error } = await supabase
+    // Use supabaseAdmin to bypass RLS since we're using Auth0 authentication
+    const { data, error } = await supabaseAdmin
       .from("profiles")
       .update(profile)
       .eq("id", userId);
@@ -76,7 +81,7 @@ export async function updateProfile(
         // Try updating without the profile_image_url field
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { profile_image_url, ...profileWithoutImage } = profile;
-        const { data: retryData, error: retryError } = await supabase
+        const { data: retryData, error: retryError } = await supabaseAdmin
           .from("profiles")
           .update(profileWithoutImage)
           .eq("id", userId);
@@ -125,7 +130,8 @@ export async function upsertProfileFromAuth0Session(
   const name = session.user.name || session.user.nickname || "";
 
   try {
-    const { data: existingProfile } = await supabase
+    // Use supabaseAdmin to bypass RLS since we're using Auth0 authentication
+    const { data: existingProfile } = await supabaseAdmin
       .from("profiles")
       .select("*")
       .eq("id", userId)
@@ -139,7 +145,7 @@ export async function upsertProfileFromAuth0Session(
         wishlist: [],
       };
 
-      const { data, error: insertError } = await supabase
+      const { data, error: insertError } = await supabaseAdmin
         .from("profiles")
         .insert([newProfile])
         .select();
@@ -152,7 +158,7 @@ export async function upsertProfileFromAuth0Session(
       return { created: true, profile: profileWithAdmin };
     }
 
-    const { data: updatedProfile, error: updateError } = await supabase
+    const { data: updatedProfile, error: updateError } = await supabaseAdmin
       .from("profiles")
       .update({ email, name })
       .eq("id", userId)

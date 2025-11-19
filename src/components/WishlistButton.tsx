@@ -1,15 +1,10 @@
 "use client";
 
-import {
-  removeMovieFromWishlist,
-  addMovieToWishlist,
-} from "@/lib/supabase/wishlist";
 import { cn } from "@/lib/utils";
 import type { Movie } from "@/types/movie";
 import type { SessionData } from "@auth0/nextjs-auth0/types";
 import { Heart } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
-import { getProfile } from "@/lib/supabase/profiles";
 
 type WishlistButtonProps = {
   movieId: Movie["id"];
@@ -33,7 +28,7 @@ export const WishlistButton = ({
       }
 
       try {
-        // Use fetch to call the wishlist API instead of direct DB calls
+        // Use fetch to call the wishlist API
         const response = await fetch(
           `/api/wishlist?userId=${encodeURIComponent(userId)}`
         );
@@ -47,19 +42,7 @@ export const WishlistButton = ({
           const isInList = normalizedWishlist.includes(movieIdNum);
           setIsInWishlist(isInList);
         } else {
-          // Fallback to getProfile if API fails
-          const profile = await getProfile(userId);
-          if (profile?.wishlist) {
-            // Normalize the movie ID to number for comparison
-            const movieIdNum = typeof movieId === 'string' ? parseInt(movieId, 10) : movieId;
-            const normalizedWishlist = profile.wishlist.map((id: number | string) => 
-              typeof id === 'string' ? parseInt(id, 10) : id
-            );
-            const isInList = normalizedWishlist.includes(movieIdNum);
-            setIsInWishlist(isInList);
-          } else {
-            setIsInWishlist(false);
-          }
+          setIsInWishlist(false);
         }
       } catch (error) {
         console.error("Failed to check wishlist status:", error);
@@ -80,10 +63,20 @@ export const WishlistButton = ({
     setLoading(true);
 
     try {
-      if (isInWishlist) {
-        await removeMovieFromWishlist(userId, movieId);
-      } else {
-        await addMovieToWishlist(userId, movieId);
+      const method = isInWishlist ? 'DELETE' : 'POST';
+      const response = await fetch('/api/wishlist', {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          movieId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to ${isInWishlist ? 'remove from' : 'add to'} wishlist`);
       }
 
       setIsInWishlist(!isInWishlist);

@@ -1,5 +1,5 @@
 import { getProfile, updateProfile } from "./profiles";
-import { supabase } from "./supabase";
+import { supabaseAdmin } from "./supabaseAdmin";
 import { MovieRankError, ErrorType } from "@/lib/utils/errorHandler";
 
 /**
@@ -19,7 +19,8 @@ async function ensureProfileExists(userId: string) {
       // admin: false, // Temporarily commented out until schema migration is applied
     };
 
-    const { data, error } = await supabase
+    // Use supabaseAdmin to bypass RLS since we're using Auth0 authentication
+    const { data, error } = await supabaseAdmin
       .from("profiles")
       .insert([newProfile])
       .select()

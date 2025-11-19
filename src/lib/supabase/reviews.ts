@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabaseAdmin } from "./supabaseAdmin";
 import type {
   Review,
   ReviewWithUser,
@@ -11,7 +11,8 @@ export async function createReview(
   userId: string,
   input: CreateReviewInput
 ): Promise<Review> {
-  const { data, error } = await supabase
+  // Use supabaseAdmin to bypass RLS since we're using Auth0 authentication
+  const { data, error } = await supabaseAdmin
     .from("reviews")
     .insert({
       user_id: userId,
@@ -50,7 +51,7 @@ export async function updateReview(
     updateData.comment = input.comment || null;
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("reviews")
     .update(updateData)
     .eq("id", reviewId)
@@ -69,7 +70,7 @@ export async function deleteReview(
   userId: string,
   reviewId: string
 ): Promise<void> {
-  const { error } = await supabase
+  const { error } = await supabaseAdmin
     .from("reviews")
     .delete()
     .eq("id", reviewId)
@@ -84,7 +85,7 @@ export async function getUserReviewForMovie(
   userId: string,
   movieId: number
 ): Promise<Review | null> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("reviews")
     .select("*")
     .eq("user_id", userId)
@@ -105,7 +106,7 @@ export async function getMovieReviews(
   movieId: number,
   limit = 20
 ): Promise<ReviewWithUser[]> {
-  const { data, error } = await supabase.rpc("get_movie_reviews", {
+  const { data, error } = await supabaseAdmin.rpc("get_movie_reviews", {
     movie_id_param: movieId,
     limit_count: limit,
   });
@@ -120,7 +121,7 @@ export async function getMovieReviews(
 export async function getMovieStats(
   movieId: number
 ): Promise<MovieStats | null> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .rpc("get_movie_stats", {
       movie_id_param: movieId,
     })
@@ -137,7 +138,7 @@ export async function getAllReviewsByUser(
   userId: string,
   limit = 50
 ): Promise<ReviewWithUser[]> {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from("reviews")
     .select(
       `
