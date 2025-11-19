@@ -8,18 +8,13 @@ export async function POST(request: Request) {
 
     if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json(
-        {
-          message: "Unauthorized access to CRON endpoint",
-        },
+        { message: "Unauthorized access to CRON endpoint" },
         { status: 401 }
       );
     }
 
-    console.log("🕐 CRON job started: Upcoming movies curation");
-
     if (!UpcomingMoviesCurationService.shouldCurate(2)) {
       const status = UpcomingMoviesCurationService.getCurationStatus();
-      console.log("⏭️ Curation not needed yet, skipping CRON job");
 
       return NextResponse.json(
         {
@@ -31,13 +26,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = await UpcomingMoviesCurationService.curateUpcomingMovies(4); 
+    const result = await UpcomingMoviesCurationService.curateUpcomingMovies(4);
 
     if (result.success) {
-      console.log(
-        `✅ CRON curation completed: ${result.featuredMoviesSelected} movies curated from ${result.moviesProcessed} candidates`
-      );
-
       return NextResponse.json(
         {
           message: "CRON curation completed successfully",
@@ -49,8 +40,6 @@ export async function POST(request: Request) {
         { status: 200 }
       );
     } else {
-      console.error(`❌ CRON curation failed: ${result.error}`);
-
       return NextResponse.json(
         {
           message: "CRON curation failed",
@@ -62,7 +51,7 @@ export async function POST(request: Request) {
       );
     }
   } catch (error) {
-    console.error("💥 CRON job error:", error);
+    console.error("CRON job error:", error);
     return NextResponse.json(
       {
         message: "CRON job failed unexpectedly",
@@ -88,7 +77,7 @@ export async function GET() {
       { status: 200 }
     );
   } catch (error) {
-    console.error("💥 CRON health check failed:", error);
+    console.error("CRON health check failed:", error);
     return NextResponse.json(
       {
         message: "CRON endpoint unhealthy",

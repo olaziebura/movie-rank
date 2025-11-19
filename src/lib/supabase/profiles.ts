@@ -2,25 +2,16 @@ import type { SessionData } from "@auth0/nextjs-auth0/types";
 import { supabaseAdmin } from "./supabaseAdmin";
 import type { UserProfile } from "@/types/user";
 
-/**
- * Retrieves user profile by ID.
- * @param userId - User ID to fetch profile for
- * @returns Promise resolving to user profile or null if not found
- */
 export async function getProfile(userId: string): Promise<UserProfile | null> {
-  // Validate userId
   if (!userId || userId === 'undefined' || userId === 'null') {
-    console.warn('getProfile called with invalid userId:', userId);
     return null;
   }
 
-  // Retry logic for network failures
   const maxRetries = 3;
   let lastError: unknown = null;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      // Use supabaseAdmin to bypass RLS since we're using Auth0 authentication
       const { data, error } = await supabaseAdmin
         .from("profiles")
         .select("*")
@@ -29,56 +20,36 @@ export async function getProfile(userId: string): Promise<UserProfile | null> {
 
       if (error) {
         if (error.code === "PGRST116") {
-          // Profile not found - this is not an error, just return null
           return null;
         }
 
-        // Store error but don't log it yet (will log after all retries)
         lastError = error;
         
-        // Don't retry on database-level errors
         if (error.code && error.code !== '') {
           break;
         }
         
-        // Wait before retry (exponential backoff)
         if (attempt < maxRetries) {
           await new Promise(resolve => setTimeout(resolve, 100 * attempt));
           continue;
         }
       } else {
-        // Success!
         return data;
       }
     } catch (error) {
       lastError = error;
       
-      // Wait before retry (exponential backoff)
       if (attempt < maxRetries) {
-        console.warn(`getProfile attempt ${attempt} failed, retrying...`);
         await new Promise(resolve => setTimeout(resolve, 100 * attempt));
         continue;
       }
     }
   }
 
-  // All retries failed - log the error
-  console.error('[ Server ] Supabase error in getProfile after retries:', {
-    userId,
-    error: lastError instanceof Error ? lastError.message : String(lastError),
-    attempts: maxRetries
-  });
-  
-  // Return null instead of throwing to prevent app crashes
+  console.error('Supabase error in getProfile after retries:', lastError);
   return null;
 }
 
-/**
- * Updates user profile.
- * @param userId - User ID to update profile for
- * @param profile - Profile data to update
- * @returns Promise resolving to update result
- */
 export async function updateProfile(
   userId: string,
   profile: UserProfile
@@ -91,15 +62,10 @@ export async function updateProfile(
       .eq("id", userId);
 
     if (error) {
-      // Handle the case where profile_image_url column doesn't exist yet
       if (error.code === 'PGRST204' && error.message?.includes('profile_image_url')) {
-        console.warn('profile_image_url column not found, skipping image update. Please run the SQL migration.');
-        // Try updating without the profile_image_url field
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { profile_image_url, ...profileWithoutImage } = profile;
         const { data: retryData, error: retryError } = await supabaseAdmin
           .from("profiles")
-          .update(profileWithoutImage)
+          .update(profile)
           .eq("id", userId);
         
         if (retryError) {
@@ -120,11 +86,6 @@ export async function updateProfile(
   }
 }
 
-/**
- * Creates or updates user profile from Auth0 session data.
- * @param session - Auth0 session data
- * @returns Promise resolving to operation result with profile data
- */
 export async function upsertProfileFromAuth0Session(
   session: SessionData | null
 ): Promise<{

@@ -76,11 +76,8 @@ export class UpcomingMoviesCurationService {
         timestamp: new Date().toISOString(),
       };
 
-      console.log("🎉 Curation completed successfully:", result);
       return result;
     } catch (error) {
-      console.error("❌ Curation failed:", error);
-
       return {
         success: false,
         moviesProcessed: 0,
@@ -99,8 +96,6 @@ export class UpcomingMoviesCurationService {
     score: number;
     reasoning: string;
   }> {
-    console.log("⚡ Calculating worth-waiting-for scores...");
-
     const scoredMovies = movies
       .map((movie) => {
         const { score, reasoning } = calculateWorthWaitingScore(movie);
@@ -108,19 +103,12 @@ export class UpcomingMoviesCurationService {
       })
       .sort((a, b) => b.score - a.score);
 
-    console.log(
-      `📊 Scored ${scoredMovies.length} movies, top score: ${
-        scoredMovies[0]?.score || 0
-      }`
-    );
     return scoredMovies;
   }
 
   private static selectTop10WorthWaitingFor(
     scoredMovies: Array<{ movie: Movie; score: number; reasoning: string }>
   ): CuratedMovie[] {
-    console.log("🎨 Applying curation logic for diversity and quality...");
-
     const selected: CuratedMovie[] = [];
     const usedGenres = new Set<number>();
     const minScore = 5;
@@ -169,7 +157,6 @@ export class UpcomingMoviesCurationService {
       }
     }
 
-    console.log(`✨ Selected ${selected.length} movies for featured list`);
     return selected;
   }
 
@@ -213,7 +200,6 @@ export class UpcomingMoviesCurationService {
   }
 
   static async forceCuration(maxPages = 5): Promise<CurationResult> {
-    console.log("🔄 Force curating upcoming movies...");
     return this.curateUpcomingMovies(maxPages, true);
   }
 }

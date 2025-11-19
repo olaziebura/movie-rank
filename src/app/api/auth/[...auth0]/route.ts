@@ -26,9 +26,6 @@ export async function GET(
 
     // Handle callback
     if (action === 'callback') {
-      // Handle the callback after successful authentication
-      const callbackUrl = new URL(req.url);
-      // Process the callback and redirect
       return NextResponse.redirect(new URL('/', req.url));
     }
 

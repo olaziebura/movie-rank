@@ -13,20 +13,11 @@ export default async function HomePage() {
   
   let profile = null;
   if (userId) {
-    try {
-      profile = await getProfile(userId);
-    } catch (e) {
-      console.error("Failed to fetch profile in HomePage:", e);
-      // Continue with null profile - page should still load
-    }
+    profile = await getProfile(userId).catch(() => null);
   }
 
   if (session) {
-    try {
-      await upsertProfileFromAuth0Session(session);
-    } catch (e) {
-      console.error("Failed to upsert profile in HomePage:", e);
-    }
+    await upsertProfileFromAuth0Session(session).catch(() => null);
   }
 
   const { results } = await getPopularMovies(1);

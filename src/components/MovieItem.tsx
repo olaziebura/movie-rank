@@ -134,7 +134,7 @@ export const MovieItem = ({
                 try {
                   const y = new Date(release_date).getFullYear();
                   return Number.isFinite(y) ? y : "";
-                } catch (e) {
+                } catch {
                   return "";
                 }
               })()}

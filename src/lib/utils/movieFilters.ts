@@ -29,25 +29,15 @@ export function getGenreName(id: number): string {
   return TMDB_GENRES[id as GenreId] || `Unknown Genre (${id})`;
 }
 
-/**
- * Validates if a movie's release date falls within the specified year range.
- * This is a client-side safety check in case TMDB API returns movies outside the requested range.
- * @param releaseDate - Movie's release date string (YYYY-MM-DD format)
- * @param yearFrom - Minimum year (inclusive)
- * @param yearTo - Maximum year (inclusive)
- * @returns true if movie is within range or if no filters are set
- */
 export function isMovieInYearRange(
   releaseDate: string | undefined | null,
   yearFrom?: number,
   yearTo?: number
 ): boolean {
-  // If no year filters, accept all movies
   if (!yearFrom && !yearTo) {
     return true;
   }
 
-  // If movie has no release date, exclude it when filters are active
   if (!releaseDate) {
     return false;
   }
@@ -55,26 +45,14 @@ export function isMovieInYearRange(
   try {
     const year = new Date(releaseDate).getFullYear();
     
-    // Check if year is valid
     if (!Number.isFinite(year) || isNaN(year)) {
-      console.warn(`Invalid year parsed from date: ${releaseDate}`);
       return false;
     }
 
-    // Check against filters
     const meetsMinYear = !yearFrom || year >= yearFrom;
     const meetsMaxYear = !yearTo || year <= yearTo;
-    const inRange = meetsMinYear && meetsMaxYear;
-
-    // Log filtering decisions for debugging
-    if (!inRange && (yearFrom || yearTo)) {
-      console.log(`Movie filtered out: year ${year} not in range [${yearFrom || 'any'}, ${yearTo || 'any'}]`);
-    }
-
-    return inRange;
-  } catch (e) {
-    console.warn(`Error parsing date: ${releaseDate}`, e);
-    // If date parsing fails, exclude the movie when filters are active
+    return meetsMinYear && meetsMaxYear;
+  } catch {
     return false;
   }
 }
@@ -116,7 +94,6 @@ export class MovieFilterUtils {
     startYear?: number,
     endYear?: number
   ) {
-    // If no year filters are set, return all movies
     if (startYear === undefined && endYear === undefined) {
       return movies;
     }
@@ -126,12 +103,11 @@ export class MovieFilterUtils {
         try {
           const y = new Date(movie.release_date).getFullYear();
           return Number.isFinite(y) ? y : undefined;
-        } catch (e) {
+        } catch {
           return undefined;
         }
       })();
 
-      // If movie has no valid year, exclude it when filters are active
       if (rawYear === undefined) {
         return false;
       }

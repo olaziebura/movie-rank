@@ -38,8 +38,6 @@ export async function storeFeaturedUpcomingMovies(
   }>
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    console.log(`Storing ${curatedMovies.length} featured upcoming movies...`);
-
     const { error: deleteError } = await supabaseAdmin
       .from("upcoming_movies_featured")
       .delete()
@@ -69,7 +67,7 @@ export async function storeFeaturedUpcomingMovies(
       })
     );
 
-    const { data, error: insertError } = await supabaseAdmin
+    const { error: insertError } = await supabaseAdmin
       .from("upcoming_movies_featured")
       .insert(moviesData)
       .select();
@@ -79,9 +77,6 @@ export async function storeFeaturedUpcomingMovies(
       return { success: false, error: insertError.message };
     }
 
-    console.log(
-      `Successfully stored ${data?.length || 0} featured upcoming movies`
-    );
     return { success: true };
   } catch (error) {
     console.error("Unexpected error storing featured upcoming movies:", error);

@@ -303,7 +303,7 @@ export function SearchBar({
                             try {
                               const y = new Date(movie.release_date).getFullYear();
                               return Number.isFinite(y) ? y : "";
-                            } catch (e) {
+                            } catch {
                               return "";
                             }
                           })()}

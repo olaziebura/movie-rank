@@ -8,10 +8,6 @@ interface AdminGuardProps {
   fallback?: React.ReactNode;
 }
 
-/**
- * AdminGuard component that only renders children if user is authenticated and has admin privileges.
- * This is a server component that checks authentication and admin status server-side.
- */
 export async function AdminGuard({ children, fallback }: AdminGuardProps) {
   let session: SessionData | null = null;
   let isAdmin = false;
@@ -22,7 +18,6 @@ export async function AdminGuard({ children, fallback }: AdminGuardProps) {
     return error;
   }
 
-  // Check admin status if user is authenticated
   if (session?.user?.sub) {
     try {
       isAdmin = await isUserAdmin(session.user.sub);
@@ -31,7 +26,6 @@ export async function AdminGuard({ children, fallback }: AdminGuardProps) {
     }
   }
 
-  // User not authenticated
   if (!session?.user) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -54,7 +48,6 @@ export async function AdminGuard({ children, fallback }: AdminGuardProps) {
     );
   }
 
-  // User authenticated but not admin
   if (!isAdmin) {
     if (fallback) {
       return <>{fallback}</>;
@@ -83,6 +76,5 @@ export async function AdminGuard({ children, fallback }: AdminGuardProps) {
     );
   }
 
-  // User is authenticated and is admin
   return <>{children}</>;
 }
