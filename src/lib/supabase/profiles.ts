@@ -14,47 +14,63 @@ export async function getProfile(userId: string): Promise<UserProfile | null> {
     return null;
   }
 
-  try {
-    // Use supabaseAdmin to bypass RLS since we're using Auth0 authentication
-    const { data, error } = await supabaseAdmin
-      .from("profiles")
-      .select("*")
-      .eq("id", userId)
-      .single();
+  // Retry logic for network failures
+  const maxRetries = 3;
+  let lastError: unknown = null;
 
-    if (error) {
-      if (error.code === "PGRST116") {
-        // Profile not found - this is not an error, just return null
-        return null;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      // Use supabaseAdmin to bypass RLS since we're using Auth0 authentication
+      const { data, error } = await supabaseAdmin
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      if (error) {
+        if (error.code === "PGRST116") {
+          // Profile not found - this is not an error, just return null
+          return null;
+        }
+
+        // Store error but don't log it yet (will log after all retries)
+        lastError = error;
+        
+        // Don't retry on database-level errors
+        if (error.code && error.code !== '') {
+          break;
+        }
+        
+        // Wait before retry (exponential backoff)
+        if (attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 100 * attempt));
+          continue;
+        }
+      } else {
+        // Success!
+        return data;
       }
-
-      // Log the error with full context but don't throw - return null instead
-      console.error('[ Server ] Supabase error in getProfile:', {
-        userId,
-        error: JSON.stringify(error, null, 2),
-        errorString: String(error),
-        errorKeys: Object.keys(error),
-        code: error.code,
-        message: error.message,
-        details: error.details,
-        hint: error.hint
-      });
+    } catch (error) {
+      lastError = error;
       
-      // Return null instead of throwing to prevent app crashes
-      return null;
+      // Wait before retry (exponential backoff)
+      if (attempt < maxRetries) {
+        console.warn(`getProfile attempt ${attempt} failed, retrying...`);
+        await new Promise(resolve => setTimeout(resolve, 100 * attempt));
+        continue;
+      }
     }
-
-    return data;
-  } catch (error) {
-    // Log unexpected errors but don't throw
-    console.error('Unexpected error in getProfile:', {
-      userId,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
-    
-    // Return null to allow the app to continue functioning
-    return null;
   }
+
+  // All retries failed - log the error
+  console.error('[ Server ] Supabase error in getProfile after retries:', {
+    userId,
+    error: lastError instanceof Error ? lastError.message : String(lastError),
+    attempts: maxRetries
+  });
+  
+  // Return null instead of throwing to prevent app crashes
+  return null;
 }
 
 /**

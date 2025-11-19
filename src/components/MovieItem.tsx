@@ -130,7 +130,14 @@ export const MovieItem = ({
               <span>{vote_count.toString()} votes</span>
             </p>
             <p className="text-sm text-gray-300">
-              {new Date(release_date).getFullYear()}
+              {(() => {
+                try {
+                  const y = new Date(release_date).getFullYear();
+                  return Number.isFinite(y) ? y : "";
+                } catch (e) {
+                  return "";
+                }
+              })()}
             </p>
           </div>
           {overview && (

@@ -298,9 +298,20 @@ export function SearchBar({
                         {movie.title}
                       </h4>
                       <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <span>{new Date(movie.release_date).getFullYear()}</span>
+                        <span>
+                          {(() => {
+                            try {
+                              const y = new Date(movie.release_date).getFullYear();
+                              return Number.isFinite(y) ? y : "";
+                            } catch (e) {
+                              return "";
+                            }
+                          })()}
+                        </span>
                         <span>•</span>
-                        <span>★ {movie.vote_average.toFixed(1)}</span>
+                        <span>
+                          ★ {typeof movie.vote_average === "number" && Number.isFinite(movie.vote_average) ? movie.vote_average.toFixed(1) : "0.0"}
+                        </span>
                       </div>
                     </div>
                   </Link>

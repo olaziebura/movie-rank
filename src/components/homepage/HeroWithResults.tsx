@@ -81,6 +81,7 @@ export function HeroWithResults({
       currentFilters.releaseYearTo ||
       currentFilters.country ||
       currentFilters.minRating !== undefined ||
+      currentFilters.maxRating !== undefined ||
       (currentFilters.sortBy && currentFilters.sortBy !== "popularity.desc")
     );
   };

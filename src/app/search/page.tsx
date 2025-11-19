@@ -146,7 +146,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     filters.country ||
     filters.minRating ||
     filters.maxRating ||
-    (filters.mediaType && filters.mediaType !== "movie")
+    (filters.mediaType && filters.mediaType !== "movie") ||
+    (filters.sortBy && filters.sortBy !== "popularity.desc") // Count non-default sorting as a filter
   );
 
   let searchResults = null;

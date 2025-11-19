@@ -66,10 +66,28 @@ export class MovieFilterUtils {
     startYear?: number,
     endYear?: number
   ) {
+    // If no year filters are set, return all movies
+    if (startYear === undefined && endYear === undefined) {
+      return movies;
+    }
+
     return movies.filter((movie) => {
-      const year = new Date(movie.release_date).getFullYear();
-      const passesStart = startYear === undefined || year >= startYear;
-      const passesEnd = endYear === undefined || year <= endYear;
+      const rawYear = (() => {
+        try {
+          const y = new Date(movie.release_date).getFullYear();
+          return Number.isFinite(y) ? y : undefined;
+        } catch (e) {
+          return undefined;
+        }
+      })();
+
+      // If movie has no valid year, exclude it when filters are active
+      if (rawYear === undefined) {
+        return false;
+      }
+
+      const passesStart = startYear === undefined || rawYear >= startYear;
+      const passesEnd = endYear === undefined || rawYear <= endYear;
       return passesStart && passesEnd;
     });
   }
@@ -115,8 +133,12 @@ export class MovieFilterUtils {
           valueB = b.popularity;
           break;
         case "release_date":
-          valueA = new Date(a.release_date).getTime();
-          valueB = new Date(b.release_date).getTime();
+          {
+            const ta = new Date(a.release_date).getTime();
+            const tb = new Date(b.release_date).getTime();
+            valueA = Number.isFinite(ta) ? ta : 0;
+            valueB = Number.isFinite(tb) ? tb : 0;
+          }
           break;
         case "title":
           valueA = a.title.toLowerCase();

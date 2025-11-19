@@ -38,7 +38,8 @@ export async function GET(request: NextRequest) {
       filters.releaseYearTo ||
       filters.country ||
       filters.minRating ||
-      filters.maxRating;
+      filters.maxRating ||
+      (filters.sortBy && filters.sortBy !== "popularity.desc"); // Count non-default sorting as a filter
 
     if (!hasQuery && !hasFilters) {
       return NextResponse.json(
