@@ -97,6 +97,7 @@ export async function getFeaturedUpcomingMovies(
   error?: string;
 }> {
   try {
+    // Use regular supabase client (anon key) which should work with RLS policies
     let query = supabase.from("upcoming_movies_featured").select("*");
 
     switch (sortBy) {
@@ -132,9 +133,14 @@ export async function getFeaturedUpcomingMovies(
       return { movies: [], success: false, error: error.message };
     }
 
+    // Filter movies with release date in the future (compare dates only, not time)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to midnight for fair comparison
+    
     const upcomingMovies = (data || []).filter((movie) => {
       const releaseDate = new Date(movie.release_date);
-      return releaseDate > new Date();
+      releaseDate.setHours(0, 0, 0, 0);
+      return releaseDate >= today;
     });
 
     return {
