@@ -41,6 +41,7 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   try {
+    console.log("=== UPDATE PROFILE START ===");
     const session = await auth0.getSession();
     
     if (!session) {
@@ -51,7 +52,15 @@ export async function PUT(request: Request) {
     }
 
     const userId = session.user?.sub || session.user?.id;
+    const userProvider = userId?.split("|")[0] || "";
+    const isSocialLogin = userProvider.includes("google") || 
+                         userProvider.includes("facebook") || 
+                         userProvider.includes("twitter") ||
+                         userProvider.includes("github");
+    
     console.log("PUT Profile - User ID:", userId);
+    console.log("PUT Profile - Provider:", userProvider);
+    console.log("PUT Profile - Is Social Login:", isSocialLogin);
     
     if (!userId) {
       return NextResponse.json(
@@ -61,14 +70,24 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
-    const { name, profileImageUrl } = body;
-    console.log("PUT Profile - Request body:", { name, profileImageUrl });
+    const { name, email, profileImageUrl } = body;
+    console.log("PUT Profile - Request body:", { name, email, profileImageUrl });
 
     if (!name || !name.trim()) {
       return NextResponse.json(
         { error: "Name is required" },
         { status: 400 }
       );
+    }
+
+    // Only validate email for non-social login users
+    if (!isSocialLogin) {
+      if (!email || !email.trim() || !email.includes('@')) {
+        return NextResponse.json(
+          { error: "Valid email is required" },
+          { status: 400 }
+        );
+      }
     }
 
     // Get current profile
@@ -83,13 +102,15 @@ export async function PUT(request: Request) {
     }
 
     // Update profile with new data
+    // For social login, keep the existing email
     const updatedProfile = {
       ...currentProfile,
       name: name.trim(),
+      email: isSocialLogin ? currentProfile.email : email.trim(),
       profile_image_url: profileImageUrl?.trim() || currentProfile.profile_image_url,
     };
 
-    console.log("PUT Profile - Updated profile:", updatedProfile);
+    console.log("PUT Profile - Updated profile data:", updatedProfile);
     const result = await updateProfile(userId, updatedProfile);
     console.log("PUT Profile - Update result:", result);
     
@@ -100,9 +121,14 @@ export async function PUT(request: Request) {
       );
     }
 
+    // Fetch the updated profile to return the latest data
+    const refreshedProfile = await getProfile(userId);
+    console.log("PUT Profile - Refreshed profile:", refreshedProfile);
+    console.log("=== UPDATE PROFILE END ===");
+
     return NextResponse.json({
       success: true,
-      profile: updatedProfile,
+      profile: refreshedProfile || updatedProfile,
       ...(result.warning && { warning: result.warning }),
     });
   } catch (error) {

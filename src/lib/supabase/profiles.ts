@@ -55,22 +55,42 @@ export async function updateProfile(
   profile: UserProfile
 ): Promise<{ success: boolean; data?: unknown; error?: unknown; warning?: string }> {
   try {
+    console.log('=== UPDATE PROFILE START ===');
+    console.log('User ID:', userId);
+    console.log('Profile data to update:', JSON.stringify(profile, null, 2));
+    
     // Use supabaseAdmin to bypass RLS since we're using Auth0 authentication
     const { data, error } = await supabaseAdmin
       .from("profiles")
-      .update(profile)
-      .eq("id", userId);
+      .update({
+        name: profile.name,
+        email: profile.email,
+        profile_image_url: profile.profile_image_url,
+        wishlist: profile.wishlist,
+      })
+      .eq("id", userId)
+      .select()
+      .single();
 
     if (error) {
+      console.error('❌ Supabase update error:', JSON.stringify(error, null, 2));
       if (error.code === 'PGRST204' && error.message?.includes('profile_image_url')) {
         const { data: retryData, error: retryError } = await supabaseAdmin
           .from("profiles")
-          .update(profile)
-          .eq("id", userId);
+          .update({
+            name: profile.name,
+            email: profile.email,
+            wishlist: profile.wishlist,
+          })
+          .eq("id", userId)
+          .select()
+          .single();
         
         if (retryError) {
+          console.error('❌ Retry failed:', retryError);
           return { success: false, error: retryError };
         }
+        console.log('✅ Profile updated (without image):', retryData);
         return { 
           success: true, 
           data: retryData, 
@@ -80,8 +100,11 @@ export async function updateProfile(
       return { success: false, error };
     }
 
+    console.log('✅ Profile updated successfully:', JSON.stringify(data, null, 2));
+    console.log('=== UPDATE PROFILE END ===');
     return { success: true, data };
   } catch (error) {
+    console.error('❌ Exception in updateProfile:', error);
     return { success: false, error };
   }
 }
@@ -135,17 +158,26 @@ export async function upsertProfileFromAuth0Session(
       return { created: true, profile: profileWithAdmin };
     }
 
-    const { data: updatedProfile, error: updateError } = await supabaseAdmin
-      .from("profiles")
-      .update({ email, name })
-      .eq("id", userId)
-      .select();
-
-    if (updateError) {
-      return { created: false, profile: existingProfile, error: updateError };
+    // Profile exists - DON'T update it automatically!
+    // Users should update their profile through the settings page
+    // EXCEPTION: Sync email if it changed in Auth0 (e.g., user changed it via settings)
+    if (existingProfile.email !== email && email) {
+      console.log(`Email changed in Auth0 from ${existingProfile.email} to ${email}, syncing...`);
+      const { error: syncError } = await supabaseAdmin
+        .from("profiles")
+        .update({ email })
+        .eq("id", userId);
+      
+      if (syncError) {
+        console.error("Failed to sync email:", syncError);
+      } else {
+        console.log("Email synced successfully");
+        existingProfile.email = email; // Update local object
+      }
     }
-
-    return { created: false, profile: updatedProfile?.[0] ?? null };
+    
+    console.log('Profile already exists, not updating other fields from Auth0 session');
+    return { created: false, profile: existingProfile };
   } catch (error) {
     return { created: false, profile: null, error };
   }
