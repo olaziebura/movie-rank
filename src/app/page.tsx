@@ -5,7 +5,6 @@ import {
   upsertProfileFromAuth0Session,
 } from "@/lib/supabase/profiles";
 import { Hero } from "@/components/homepage/Hero";
-import { UpcomingMoviesCarousel } from "@/components/homepage/UpcomingMoviesCarousel";
 
 export default async function HomePage() {
   const session = await auth0.getSession();
@@ -28,7 +27,6 @@ export default async function HomePage() {
   return (
     <main>
       <Hero session={session} profile={profile} popularMovies={sortedResults} />
-      <UpcomingMoviesCarousel />
     </main>
   );
 }
