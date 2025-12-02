@@ -20,10 +20,42 @@ export default async function HomePage() {
     await upsertProfileFromAuth0Session(session).catch(() => null);
   }
 
-  const { results } = await getPopularMovies(1);
-  const sortedResults = [...results].sort(
-    (a, b) => b.popularity - a.popularity
-  );
+  // Fetch multiple pages of popular movies to have more data for filtering
+  const popularMoviesPromises = [
+    getPopularMovies(1),
+    getPopularMovies(2),
+    getPopularMovies(3),
+    getPopularMovies(4),
+    getPopularMovies(5),
+  ];
+
+  const popularMoviesResponses = await Promise.all(popularMoviesPromises);
+  
+  // Combine all results from multiple pages
+  const allPopularMovies = popularMoviesResponses.flatMap(response => response.results);
+  
+  // Remove duplicates by movie ID
+  const uniqueMoviesMap = new Map();
+  allPopularMovies.forEach(movie => {
+    if (!uniqueMoviesMap.has(movie.id)) {
+      uniqueMoviesMap.set(movie.id, movie);
+    }
+  });
+  
+  // Map to the correct format with genres and sort by popularity
+  const sortedResults = Array.from(uniqueMoviesMap.values())
+    .map((movie) => ({
+      id: movie.id,
+      title: movie.title,
+      poster_path: movie.poster_path,
+      vote_average: movie.vote_average,
+      release_date: movie.release_date,
+      vote_count: movie.vote_count,
+      overview: movie.overview,
+      genres: movie.genre_ids || [],
+      popularity: movie.popularity,
+    }))
+    .sort((a, b) => b.popularity - a.popularity);
 
   // Fetch trending movies for the carousel
   const trendingData = await getTrendingMovies("day").catch(() => ({
