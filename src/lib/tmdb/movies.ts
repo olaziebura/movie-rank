@@ -32,6 +32,14 @@ export async function getUpcomingMovies(page = 1): Promise<TMDBResponse> {
   }) as Promise<TMDBResponse>;
 }
 
+export async function getTrendingMovies(
+  timeWindow: "day" | "week" = "day"
+): Promise<TMDBResponse> {
+  return tmdbFetch(`/trending/movie/${timeWindow}`, {
+    page: 1,
+  }) as Promise<TMDBResponse>;
+}
+
 export async function getMovieDetails(
   id: number
 ): Promise<MovieDetails | null> {

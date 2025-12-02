@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { HeroWithResults } from "./HeroWithResults";
+import { TopPopularMovies } from "./TopPopularMovies";
 import type { UserProfile } from "@/types/user";
 import type { Movie } from "@/types/movie";
 
@@ -10,6 +11,7 @@ type HeroProps = {
   session?: unknown;
   profile?: UserProfile | null;
   popularMovies?: Movie[] | null;
+  trendingMovies?: Movie[] | null;
 };
 
 // Pre-defined positions to avoid hydration mismatch
@@ -28,7 +30,7 @@ const PARTICLE_CONFIGS = [
   { x: 850, y: 420, duration: 19, delay: 2.8 },
 ];
 
-export const Hero = ({ session, profile, popularMovies }: HeroProps = {}) => {
+export const Hero = ({ session, profile, popularMovies, trendingMovies }: HeroProps = {}) => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -87,6 +89,17 @@ export const Hero = ({ session, profile, popularMovies }: HeroProps = {}) => {
           >
             Search through thousands of movies and TV shows with advanced filters
           </motion.p>
+
+          {/* Top 10 Popular Movies Carousel */}
+          {trendingMovies && trendingMovies.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+            >
+              <TopPopularMovies movies={trendingMovies} />
+            </motion.div>
+          )}
 
           {/* Search Bar with Filters */}
           <motion.div 

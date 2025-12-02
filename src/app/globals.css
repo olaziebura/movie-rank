@@ -228,4 +228,31 @@
     scrollbar-width: thin;
     scrollbar-color: #4d4d4d #1e1e1e;
   }
+
+  /* Slick carousel custom styles */
+  .slick-slider {
+    position: relative;
+    display: block;
+    box-sizing: border-box;
+    user-select: none;
+  }
+
+  .slick-list {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+  }
+
+  .slick-track {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .slick-slide {
+    display: block;
+    height: auto;
+  }
 }
