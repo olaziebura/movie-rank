@@ -205,14 +205,14 @@ export function TopPopularMovies({ movies }: TopPopularMoviesProps) {
           <div className="flex gap-2">
             <button
               onClick={handlePrevious}
-              className="p-2 rounded-full bg-black/40 hover:bg-black/60 text-white transition-colors backdrop-blur-sm"
+              className="p-2 rounded-full bg-black/40 active:bg-black/70 text-white transition-colors backdrop-blur-sm touch-manipulation lg:hover:bg-black/60"
               aria-label="Previous"
             >
               <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
             </button>
             <button
               onClick={handleNext}
-              className="p-2 rounded-full bg-black/40 hover:bg-black/60 text-white transition-colors backdrop-blur-sm"
+              className="p-2 rounded-full bg-black/40 active:bg-black/70 text-white transition-colors backdrop-blur-sm touch-manipulation lg:hover:bg-black/60"
               aria-label="Next"
             >
               <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
@@ -237,7 +237,7 @@ export function TopPopularMovies({ movies }: TopPopularMoviesProps) {
                       <img
                         src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                         alt={movie.title}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="w-full h-full object-cover transition-transform duration-300"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-neutral-600">
@@ -246,12 +246,41 @@ export function TopPopularMovies({ movies }: TopPopularMoviesProps) {
                     )}
                     
                     {/* Rank Badge */}
-                    <div className="absolute top-2 left-2 bg-yellow-400 text-black font-bold text-lg w-10 h-10 rounded-full flex items-center justify-center shadow-lg">
+                    <div className="absolute top-2 left-2 bg-yellow-400 text-black font-bold text-lg w-10 h-10 rounded-full flex items-center justify-center shadow-lg z-10">
                       {index + 1}
                     </div>
 
-                    {/* Overlay on hover */}
-                    <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-center p-4">
+                    {/* Mobile/Tablet: Always visible info (< lg) */}
+                    <div className="lg:hidden absolute bottom-0 inset-x-0 bg-black/85 backdrop-blur-sm p-3">
+                      <h3 className="text-white font-bold text-base mb-2 line-clamp-2">
+                        {movie.title}
+                      </h3>
+                      
+                      <div className="flex items-center gap-3 text-sm">
+                        {movie.vote_average !== undefined && movie.vote_average > 0 && (
+                          <div className="flex items-center gap-1">
+                            <span className="text-yellow-400 text-base">★</span>
+                            <span className="text-white font-semibold">
+                              {movie.vote_average.toFixed(1)}
+                            </span>
+                          </div>
+                        )}
+                        {movie.release_date && (
+                          <span className="text-gray-300">
+                            {new Date(movie.release_date).getFullYear()}
+                          </span>
+                        )}
+                      </div>
+
+                      {movie.overview && (
+                        <p className="text-gray-300 text-xs mt-2 line-clamp-2 leading-relaxed">
+                          {movie.overview}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Desktop: Hover overlay (>= lg: ≥992px) */}
+                    <div className="hidden lg:block absolute inset-0 bg-black/80 opacity-0 transition-opacity duration-300 flex flex-col justify-center p-4 lg:group-hover:opacity-100">
                       <h3 className="text-white font-bold text-xl mb-3 line-clamp-2">
                         {movie.title}
                       </h3>

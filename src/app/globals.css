@@ -188,6 +188,18 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Light grey background for all text inputs and textareas */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  textarea {
+    @apply bg-gray-50;
+  }
 }
 
 @layer utilities {

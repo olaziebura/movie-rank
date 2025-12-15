@@ -46,9 +46,9 @@ function EmptySearchState() {
           </Link>
         </Button>
         <Button variant="outline" asChild>
-          <Link href="/wishlist" className="flex items-center gap-2">
+          <Link href="/wishlists" className="flex items-center gap-2">
             <Search className="w-4 h-4" />
-            View My Wishlist
+            View My Wishlists
           </Link>
         </Button>
       </div>
@@ -394,45 +394,6 @@ export default function SearchPage() {
           onFiltersChange={handleFiltersChange}
           onClearFilters={handleClearFilters}
         />
-
-        {/* Info message when showing popular movies */}
-        {!hasQuery && !hasFilters && (
-          <Card className="mb-6 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 border-blue-200">
-            <CardContent className="p-6">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg">
-                  <Film className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
-                    🎬 Discover Popular Movies
-                  </h3>
-                  <p className="text-sm text-gray-700 mb-3">
-                    Currently showing the most popular movies. Use filters below to customize your search:
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-xs">
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <span className="text-blue-500">🎭</span>
-                      <span>Select genres</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <span className="text-purple-500">📅</span>
-                      <span>Filter by year</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <span className="text-yellow-500">⭐</span>
-                      <span>Set minimum rating</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <span className="text-green-500">🌍</span>
-                      <span>Choose country</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Content */}
         {isLoading ? (

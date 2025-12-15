@@ -74,7 +74,7 @@ export const MovieItem = ({
 
   return (
     <div
-      className="relative bg-neutral-600 text-white rounded-lg shadow-2xl group transform transition-all duration-300 hover:scale-105 cursor-pointer overflow-hidden"
+      className="relative bg-neutral-600 text-white rounded-lg shadow-2xl group transform transition-all duration-300 cursor-pointer overflow-hidden"
       onClick={handleNavigate}
       role="button"
       tabIndex={0}
@@ -85,11 +85,12 @@ export const MovieItem = ({
         }
       }}
       aria-label={`View details for ${title}`}
+      style={{ transform: 'none' }} // Prevent scale on touch devices
     >
       <div className="relative overflow-hidden">
         {/* Position overlay for ranked lists */}
         {typeof position === "number" && position > 0 && (
-          <div className="absolute w-full h-full bg-neutral-900/40 overflow-hidden transition-opacity group-hover:opacity-0 z-10">
+          <div className="absolute w-full h-full bg-neutral-900/40 overflow-hidden z-10">
             <span className="absolute -left-10 top-30 -tracking-[60px] text-[300px] font-bold transform opacity-30 select-none">
               {position}
             </span>
@@ -105,8 +106,50 @@ export const MovieItem = ({
           priority={position ? position <= 6 : false}
         />
 
-        {/* Default overlay with title and rating */}
-        <div className="absolute bottom-0 left-0 right-0 px-4 py-4 bg-gradient-to-t from-neutral-900/90 to-transparent group-hover:opacity-0 transition-opacity duration-300">
+        {/* Mobile/Tablet: Always visible info (< lg: <992px) */}
+        <div className="lg:hidden absolute bottom-0 left-0 right-0 px-3 py-3 bg-gradient-to-t from-neutral-900/95 via-neutral-900/85 to-transparent">
+          <h3 className="text-base font-semibold mb-2 line-clamp-2">{title}</h3>
+          
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1">
+              <Star
+                fill="currentColor"
+                stroke="currentColor"
+                className="w-4 h-4 text-yellow-500"
+                aria-hidden="true"
+              />
+              <span className="text-sm text-white font-medium">
+                {vote_average.toFixed(1)}
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-gray-300 flex gap-1 items-center">
+                <Vote className="w-3 h-3" aria-hidden="true" />
+                <span>{vote_count.toString()}</span>
+              </p>
+              <p className="text-xs text-gray-300">
+                {(() => {
+                  try {
+                    const y = new Date(release_date).getFullYear();
+                    return Number.isFinite(y) ? y : "";
+                  } catch {
+                    return "";
+                  }
+                })()}
+              </p>
+            </div>
+          </div>
+
+          {overview && (
+            <p className="text-xs text-gray-200 line-clamp-2 leading-relaxed">
+              {overview}
+            </p>
+          )}
+        </div>
+
+        {/* Desktop: Default overlay with title and rating (>= lg: ≥992px) */}
+        <div className="hidden lg:block absolute bottom-0 left-0 right-0 px-4 py-4 bg-gradient-to-t from-neutral-900/90 to-transparent transition-opacity duration-300 lg:group-hover:opacity-0">
           <h3 className="text-lg font-semibold mb-2 line-clamp-2">{title}</h3>
           <div className="flex items-center gap-1 text-yellow-500">
             {Array.from({ length: 10 }).map((_, i) => (
@@ -124,8 +167,8 @@ export const MovieItem = ({
           </div>
         </div>
 
-        {/* Hover overlay with additional details */}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-neutral-900/95 to-neutral-800/80 px-4 py-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+        {/* Desktop: Hover overlay with additional details (>= lg: ≥992px) */}
+        <div className="hidden lg:block absolute bottom-0 left-0 right-0 bg-gradient-to-t from-neutral-900/95 to-neutral-800/80 px-4 py-4 translate-y-full transition-transform duration-300 lg:group-hover:translate-y-0">
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm text-gray-300 flex gap-1 items-center">
               <Vote className="w-4 h-4" aria-hidden="true" />
@@ -147,7 +190,7 @@ export const MovieItem = ({
           )}
         </div>
 
-        {/* Wishlist button */}
+        {/* Wishlist button - always visible */}
         {(userId || session?.user) && profile && (
           <div
             className="absolute top-3 right-3 z-20"

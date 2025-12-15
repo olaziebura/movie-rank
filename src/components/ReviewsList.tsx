@@ -1,16 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Star, User } from "lucide-react";
+import { Star, User, Lock } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { ReviewWithUser, MovieStats } from "@/types/movie";
 
 interface ReviewsListProps {
   movieId: number;
   refreshTrigger?: number;
+  currentUserId?: string | null;
 }
 
-export function ReviewsList({ movieId, refreshTrigger = 0 }: ReviewsListProps) {
+export function ReviewsList({ movieId, refreshTrigger = 0, currentUserId }: ReviewsListProps) {
   const [reviews, setReviews] = useState<ReviewWithUser[]>([]);
   const [stats, setStats] = useState<MovieStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -115,7 +116,7 @@ export function ReviewsList({ movieId, refreshTrigger = 0 }: ReviewsListProps) {
         <div className="space-y-4">
           <h3 className="text-xl font-bold">User Reviews ({reviews.length})</h3>
           {reviews.map((review) => (
-            <Card key={review.id}>
+            <Card key={review.id} className={!review.is_public ? "border-amber-200 bg-amber-50/30" : ""}>
               <CardContent className="pt-6">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -123,7 +124,15 @@ export function ReviewsList({ movieId, refreshTrigger = 0 }: ReviewsListProps) {
                       <User className="w-6 h-6 text-gray-600" />
                     </div>
                     <div>
-                      <p className="font-semibold">{review.user_name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold">{review.user_name}</p>
+                        {!review.is_public && review.user_id === currentUserId && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200">
+                            <Lock className="w-3 h-3" />
+                            Private
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-gray-600">
                         {formatDate(review.created_at)}
                       </p>

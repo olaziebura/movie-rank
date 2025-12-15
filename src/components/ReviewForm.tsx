@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Star } from "lucide-react";
+import { Star, Globe, Lock } from "lucide-react";
 import type { Review } from "@/types/movie";
 
 interface ReviewFormProps {
@@ -20,6 +20,7 @@ export function ReviewForm({
   const [rating, setRating] = useState(existingReview?.rating || 0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [comment, setComment] = useState(existingReview?.comment || "");
+  const [isPublic, setIsPublic] = useState(existingReview?.is_public ?? true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -41,6 +42,7 @@ export function ReviewForm({
           movie_id: movieId,
           rating,
           comment: comment.trim() || undefined,
+          is_public: isPublic,
         }),
       });
 
@@ -50,11 +52,11 @@ export function ReviewForm({
         throw new Error(data.error || "Failed to submit review");
       }
 
+      // Always reset form after successful submission
+      setRating(0);
+      setComment("");
+      setIsPublic(true);
       onSuccess();
-      if (!existingReview) {
-        setRating(0);
-        setComment("");
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to submit review");
     } finally {
@@ -86,6 +88,7 @@ export function ReviewForm({
       onSuccess();
       setRating(0);
       setComment("");
+      setIsPublic(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete review");
     } finally {
@@ -107,7 +110,7 @@ export function ReviewForm({
               onClick={() => setRating(value)}
               onMouseEnter={() => setHoveredRating(value)}
               onMouseLeave={() => setHoveredRating(0)}
-              className="transition-transform hover:scale-110"
+              className="transition-transform active:scale-125 touch-manipulation lg:hover:scale-110"
             >
               <Star
                 className={`w-6 h-6 ${
@@ -138,13 +141,49 @@ export function ReviewForm({
         />
       </div>
 
+      {/* Visibility Toggle */}
+      <div>
+        <label className="block text-sm font-medium mb-2">Visibility</label>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setIsPublic(true)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all touch-manipulation ${
+              isPublic
+                ? "bg-green-50 border-green-500 text-green-700"
+                : "bg-gray-50 border-gray-200 text-gray-600 active:bg-gray-100 lg:hover:bg-gray-100"
+            }`}
+          >
+            <Globe className="w-4 h-4" />
+            <span className="text-sm font-medium">Public</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsPublic(false)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all touch-manipulation ${
+              !isPublic
+                ? "bg-amber-50 border-amber-500 text-amber-700"
+                : "bg-gray-50 border-gray-200 text-gray-600 active:bg-gray-100 lg:hover:bg-gray-100"
+            }`}
+          >
+            <Lock className="w-4 h-4" />
+            <span className="text-sm font-medium">Private</span>
+          </button>
+        </div>
+        <p className="text-xs text-gray-500 mt-1">
+          {isPublic
+            ? "Everyone can see this review"
+            : "Only you can see this review"}
+        </p>
+      </div>
+
       {error && <div className="text-red-600 text-sm">{error}</div>}
 
       <div className="flex gap-2">
         <Button
           type="submit"
+          size="sm"
           disabled={rating === 0 || isSubmitting}
-          className="flex-1"
         >
           {isSubmitting
             ? "Submitting..."
@@ -156,6 +195,7 @@ export function ReviewForm({
           <Button
             type="button"
             variant="destructive"
+            size="sm"
             onClick={handleDelete}
             disabled={isSubmitting}
           >

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Topbar } from "@/components/Topbar";
 import { auth0 } from "@/lib/auth/auth0";
+import { Toaster } from "sonner";
 
 export const viewport: Viewport = {
   themeColor: "#1F2937",
@@ -65,6 +66,7 @@ export default async function RootLayout({
             </div>
           </footer>
         </div>
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );

@@ -4,6 +4,8 @@ export const auth0 = new Auth0Client({
   authorizationParameters: {
     scope: process.env.AUTH0_SCOPE,
     audience: process.env.AUTH0_AUDIENCE,
+    // Always show login screen - don't auto-login with previous session
+    prompt: 'login',
   },
   routes: {
     callback: '/api/auth/callback',

@@ -74,85 +74,85 @@ export function HorizontalFilterPanel({
 
   return (
     <Card className="w-full bg-white/95 backdrop-blur mb-6">
-      <div className="p-4">
+      <div className="p-3 md:p-4">
         {/* Header with collapse button */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <h3 className="text-base font-semibold text-gray-900">Filters</h3>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm md:text-base font-semibold text-gray-900">Filters</h3>
             {activeFilterCount > 0 && (
-              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                {activeFilterCount} active
+              <span className="text-[10px] md:text-xs bg-blue-100 text-blue-700 px-1.5 md:px-2 py-0.5 md:py-1 rounded-full">
+                {activeFilterCount}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 md:gap-2">
             {activeFilterCount > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onClearFilters}
-                className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                className="text-xs text-red-600 active:text-red-700 lg:hover:text-red-700 active:bg-red-50 lg:hover:bg-red-50 h-7 px-2"
               >
                 <X className="w-3 h-3 mr-1" />
-                Clear All
+                <span className="hidden sm:inline">Clear</span>
               </Button>
             )}
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-xs"
+              className="text-xs h-7 px-2"
             >
               {isExpanded ? (
                 <>
                   <ChevronUp className="w-4 h-4 mr-1" />
-                  Hide
+                  <span className="hidden sm:inline">Hide</span>
                 </>
               ) : (
                 <>
                   <ChevronDown className="w-4 h-4 mr-1" />
-                  Show
+                  <span className="hidden sm:inline">Show</span>
                 </>
               )}
             </Button>
           </div>
         </div>
 
-        {/* Filters - Horizontal Layout */}
+        {/* Filters - Compact Layout */}
         {isExpanded && (
-          <div className="space-y-4">
-            {/* First Row: Sort, Year, Country, Rating */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Sort By */}
+          <div className="space-y-3">
+            {/* First Row: All filters in one line on larger screens */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+              {/* Sort By - Compact */}
               <div>
-                <Label className="text-xs font-medium text-gray-700 mb-2 block">
-                  Sort By
+                <Label className="text-xs font-medium text-gray-700 mb-1 block">
+                  Sort
                 </Label>
                 <select
                   value={filters.sortBy || "popularity.desc"}
                   onChange={(e) =>
                     handleSortChange(e.target.value as SearchFilters["sortBy"])
                   }
-                  className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs bg-white h-8"
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-xs bg-white h-7 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="popularity.desc">🔥 Most Popular</option>
-                  <option value="popularity.asc">📉 Least Popular</option>
-                  <option value="vote_average.desc">⭐ Highest Rated</option>
-                  <option value="vote_average.asc">📊 Lowest Rated</option>
-                  <option value="release_date.desc">🆕 Newest First</option>
-                  <option value="release_date.asc">🕰️ Oldest First</option>
+                  <option value="popularity.desc">🔥 Popular</option>
+                  <option value="popularity.asc">📉 Unpopular</option>
+                  <option value="vote_average.desc">⭐ Top Rated</option>
+                  <option value="vote_average.asc">📊 Low Rated</option>
+                  <option value="release_date.desc">🆕 Newest</option>
+                  <option value="release_date.asc">🕰️ Oldest</option>
                 </select>
               </div>
 
-              {/* Year From */}
+              {/* Year From - Compact */}
               <div>
-                <Label className="text-xs font-medium text-gray-700 mb-2 block">
-                  Year From
+                <Label className="text-xs font-medium text-gray-700 mb-1 block">
+                  From Year
                 </Label>
                 <select
                   value={filters.releaseYearFrom || ""}
                   onChange={(e) => handleYearFromChange(e.target.value)}
-                  className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs bg-white h-8"
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-xs bg-white h-7 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Any</option>
                   {years.map((year) => (
@@ -163,15 +163,15 @@ export function HorizontalFilterPanel({
                 </select>
               </div>
 
-              {/* Year To */}
+              {/* Year To - Compact */}
               <div>
-                <Label className="text-xs font-medium text-gray-700 mb-2 block">
-                  Year To
+                <Label className="text-xs font-medium text-gray-700 mb-1 block">
+                  To Year
                 </Label>
                 <select
                   value={filters.releaseYearTo || ""}
                   onChange={(e) => handleYearToChange(e.target.value)}
-                  className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs bg-white h-8"
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-xs bg-white h-7 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Any</option>
                   {years.map((year) => (
@@ -182,17 +182,17 @@ export function HorizontalFilterPanel({
                 </select>
               </div>
 
-              {/* Country */}
+              {/* Country - Compact */}
               <div>
-                <Label className="text-xs font-medium text-gray-700 mb-2 block">
+                <Label className="text-xs font-medium text-gray-700 mb-1 block">
                   Country
                 </Label>
                 <select
                   value={filters.country || ""}
                   onChange={(e) => handleCountryChange(e.target.value)}
-                  className="w-full px-2 py-1.5 border border-gray-300 rounded-md text-xs bg-white h-8"
+                  className="w-full px-2 py-1 border border-gray-300 rounded text-xs bg-white h-7 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="">All Countries</option>
+                  <option value="">All</option>
                   {COUNTRIES.map((country) => (
                     <option key={country.code} value={country.code}>
                       {country.name}
@@ -200,76 +200,72 @@ export function HorizontalFilterPanel({
                   ))}
                 </select>
               </div>
-            </div>
 
-            {/* Second Row: Rating */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <Label className="text-xs font-medium text-gray-700">
-                  Minimum Rating {filters.minRating ? `(${filters.minRating}+)` : ""}
-                </Label>
-                {filters.minRating && (
-                  <button
-                    onClick={() => handleRatingChange(undefined, filters.maxRating)}
-                    className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                  >
-                    <X className="w-3 h-3" />
-                    Clear
-                  </button>
-                )}
-              </div>
-              <div className="flex gap-2 items-center">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
-                  <button
-                    key={rating}
-                    onClick={() => handleRatingChange(rating, filters.maxRating)}
-                    className={`transition-all transform hover:scale-110 ${
-                      filters.minRating && rating <= filters.minRating
-                        ? "text-yellow-400"
-                        : "text-gray-300 hover:text-yellow-200"
-                    }`}
-                    aria-label={`${rating} stars`}
-                    title={`${rating} stars minimum`}
-                  >
-                    <Star
-                      className="w-5 h-5"
-                      fill={
-                        filters.minRating && rating <= filters.minRating
-                          ? "currentColor"
-                          : "none"
-                      }
-                    />
-                  </button>
-                ))}
-              </div>
-              <div className="flex justify-between mt-1 px-1">
-                <span className="text-[10px] text-gray-400">1</span>
-                <span className="text-[10px] text-gray-400">5</span>
-                <span className="text-[10px] text-gray-400">10</span>
+              {/* Rating - Inline */}
+              <div className="col-span-2 sm:col-span-3 md:col-span-4 lg:col-span-1">
+                <div className="flex items-end justify-between h-full">
+                  <div className="flex-1">
+                    <Label className="text-xs font-medium text-gray-700 mb-1 block">
+                      Min Rating {filters.minRating ? `${filters.minRating}★` : ""}
+                    </Label>
+                    <div className="flex gap-0.5 items-center">
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
+                        <button
+                          key={rating}
+                          onClick={() => handleRatingChange(rating, filters.maxRating)}
+                          className={`transition-all active:scale-125 touch-manipulation lg:hover:scale-110 ${
+                            filters.minRating && rating <= filters.minRating
+                              ? "text-yellow-400"
+                              : "text-gray-300 lg:hover:text-yellow-200"
+                          }`}
+                          aria-label={`${rating} stars`}
+                          title={`${rating} stars minimum`}
+                        >
+                          <Star
+                            className="w-3 h-3"
+                            fill={
+                              filters.minRating && rating <= filters.minRating
+                                ? "currentColor"
+                                : "none"
+                            }
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {filters.minRating && (
+                    <button
+                      onClick={() => handleRatingChange(undefined, filters.maxRating)}
+                      className="text-xs text-blue-600 active:text-blue-800 lg:hover:text-blue-800 ml-1 mb-0.5 touch-manipulation"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Third Row: Genres */}
+            {/* Second Row: Genres - More Compact */}
             <div>
-              <Label className="text-xs font-medium text-gray-700 mb-2 block">
+              <Label className="text-xs font-medium text-gray-700 mb-1 block">
                 Genres{" "}
                 {selectedGenres.length > 0 && (
-                  <span className="text-blue-600">
-                    ({selectedGenres.length} selected)
+                  <span className="text-blue-600 text-xs">
+                    ({selectedGenres.length})
                   </span>
                 )}
               </Label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {Object.entries(GENRE_IDS).map(([, id]) => (
                   <Button
                     key={id}
                     variant={selectedGenres.includes(id) ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleGenreToggle(id)}
-                    className={`text-xs whitespace-nowrap h-7 px-3 transition-all ${
+                    className={`text-xs whitespace-nowrap h-6 px-2.5 py-0 transition-all touch-manipulation ${
                       selectedGenres.includes(id)
-                        ? "bg-blue-600 text-white hover:bg-blue-700 shadow-md"
-                        : "hover:bg-blue-50 hover:border-blue-300"
+                        ? "bg-blue-600 text-white active:bg-blue-700 lg:hover:bg-blue-700 shadow-sm"
+                        : "active:bg-blue-50 lg:hover:bg-blue-50 active:border-blue-300 lg:hover:border-blue-300"
                     }`}
                   >
                     {GENRE_NAMES[id]}

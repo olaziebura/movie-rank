@@ -79,6 +79,7 @@ export type Review = {
   movie_id: number;
   rating: number;
   comment: string | null;
+  is_public: boolean;
   created_at: string;
   updated_at: string;
 };
@@ -100,11 +101,13 @@ export type CreateReviewInput = {
   movie_id: number;
   rating: number;
   comment?: string;
+  is_public?: boolean;
 };
 
 export type UpdateReviewInput = {
   rating?: number;
   comment?: string;
+  is_public?: boolean;
 };
 
 export type MediaType = "movie" | "tv" | "all";

@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { ReviewForm } from "@/components/ReviewForm";
 import { ReviewsList } from "@/components/ReviewsList";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Review } from "@/types/movie";
 
 interface MovieReviewsSectionProps {
   movieId: number;
@@ -15,35 +14,13 @@ export function MovieReviewsSection({
   movieId,
   userId,
 }: MovieReviewsSectionProps) {
-  const [userReview, setUserReview] = useState<Review | null>(null);
-  const [isLoadingUserReview, setIsLoadingUserReview] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-
-  useEffect(() => {
-    if (!userId) return;
-
-    const fetchUserReview = async () => {
-      setIsLoadingUserReview(true);
-      try {
-        const response = await fetch(
-          `/api/reviews?movieId=${movieId}&userId=${userId}`
-        );
-        if (response.ok) {
-          const data = await response.json();
-          setUserReview(data.review);
-        }
-      } catch (error) {
-        console.error("Error fetching user review:", error);
-      } finally {
-        setIsLoadingUserReview(false);
-      }
-    };
-
-    fetchUserReview();
-  }, [movieId, userId, refreshTrigger]);
+  const [formKey, setFormKey] = useState(0);
 
   const handleReviewSuccess = () => {
     setRefreshTrigger((prev) => prev + 1);
+    // Reset form by changing its key - forces React to remount the component
+    setFormKey((prev) => prev + 1);
   };
 
   return (
@@ -51,25 +28,23 @@ export function MovieReviewsSection({
       {userId && (
         <Card>
           <CardHeader>
-            <CardTitle>
-              {userReview ? "Your Review" : "Write a Review"}
-            </CardTitle>
+            <CardTitle>Write a Review</CardTitle>
           </CardHeader>
           <CardContent>
-            {isLoadingUserReview ? (
-              <div className="text-center py-4">Loading...</div>
-            ) : (
-              <ReviewForm
-                movieId={movieId}
-                existingReview={userReview}
-                onSuccess={handleReviewSuccess}
-              />
-            )}
+            <ReviewForm
+              key={formKey}
+              movieId={movieId}
+              onSuccess={handleReviewSuccess}
+            />
           </CardContent>
         </Card>
       )}
 
-      <ReviewsList movieId={movieId} refreshTrigger={refreshTrigger} />
+      <ReviewsList 
+        movieId={movieId} 
+        refreshTrigger={refreshTrigger} 
+        currentUserId={userId}
+      />
     </div>
   );
 }

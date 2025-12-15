@@ -43,7 +43,7 @@ export const Sidebar = ({ session }: SidebarProps) => {
 
   const authenticatedLinks = [
     { href: "/search", label: "Search Movies", icon: <Search /> },
-    { href: "/wishlist", label: "My wishlist", icon: <Heart /> },
+    { href: "/wishlists", label: "My wishlists", icon: <Heart /> },
     { href: "/settings", label: "Settings", icon: <Settings /> },
     {
       label: "My profile",

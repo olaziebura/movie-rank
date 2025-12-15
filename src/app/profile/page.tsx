@@ -1,10 +1,12 @@
 import { auth0 } from "@/lib/auth/auth0";
 import { getProfile } from "@/lib/supabase/profiles";
+import { supabaseAdmin } from "@/lib/supabase/supabaseAdmin";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Settings, Heart, Calendar, Mail, User } from "lucide-react";
+import { PrivateNotesSection } from "@/components/PrivateNotesSection";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -36,9 +38,35 @@ export default async function ProfilePage() {
   const userId = session.user.sub || session.user.id;
   
   let userProfile = null;
+  let totalMoviesInWishlists = 0;
+  let privateNotesCount = 0;
+  
   if (userId) {
     try {
       userProfile = await getProfile(userId);
+      
+      // Fetch all wishlists for the user and count total movies
+      const { data: wishlists } = await supabaseAdmin
+        .from("wishlists")
+        .select("movie_ids")
+        .eq("user_id", userId);
+      
+      if (wishlists) {
+        // Count all movies across all wishlists (including duplicates)
+        wishlists.forEach((wishlist: any) => {
+          const movieIds = wishlist.movie_ids || [];
+          totalMoviesInWishlists += movieIds.length;
+        });
+      }
+
+      // Count private reviews
+      const { count } = await supabaseAdmin
+        .from("reviews")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("is_public", false);
+      
+      privateNotesCount = count || 0;
     } catch (e) {
       console.error("Failed to fetch profile in ProfilePage:", e);
       // Continue with null profile - page should still load
@@ -92,9 +120,9 @@ export default async function ProfilePage() {
                     </Link>
                   </Button>
                   <Button variant="outline" asChild className="w-full sm:w-auto">
-                    <Link href="/wishlist" className="flex items-center gap-2">
+                    <Link href="/wishlists" className="flex items-center gap-2">
                       <Heart className="w-4 h-4" />
-                      View Wishlist
+                      View Wishlists
                     </Link>
                   </Button>
                 </div>
@@ -104,7 +132,7 @@ export default async function ProfilePage() {
         </div>
 
         {/* Profile Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg font-semibold text-gray-900">
@@ -113,10 +141,26 @@ export default async function ProfilePage() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-blue-600">
-                {userProfile?.wishlist?.length || 0}
+                {totalMoviesInWishlists}
               </div>
               <p className="text-sm text-gray-600 mt-1">
-                {userProfile?.wishlist?.length === 1 ? 'movie saved' : 'movies saved'}
+                {totalMoviesInWishlists === 1 ? 'movie saved' : 'movies saved'}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-semibold text-gray-900">
+                Private Notes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-amber-600">
+                {privateNotesCount}
+              </div>
+              <p className="text-sm text-gray-600 mt-1">
+                {privateNotesCount === 1 ? 'personal note' : 'personal notes'}
               </p>
             </CardContent>
           </Card>
@@ -155,6 +199,11 @@ export default async function ProfilePage() {
           </Card>
         </div>
 
+        {/* Private Notes Section */}
+        <div className="mb-8">
+          <PrivateNotesSection />
+        </div>
+
         {/* Quick Actions */}
         <Card>
           <CardHeader>
@@ -165,9 +214,9 @@ export default async function ProfilePage() {
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <Button variant="outline" asChild className="h-auto p-4">
-                <Link href="/wishlist" className="flex flex-col items-center gap-2">
+                <Link href="/wishlists" className="flex flex-col items-center gap-2">
                   <Heart className="w-6 h-6" />
-                  <span className="text-sm">Manage Wishlist</span>
+                  <span className="text-sm">Manage Wishlists</span>
                 </Link>
               </Button>
               <Button variant="outline" asChild className="h-auto p-4">

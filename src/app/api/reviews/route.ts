@@ -36,7 +36,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, review });
     }
 
-    const reviews = await getMovieReviews(movieIdNum);
+    // Get the current user's ID to show their private reviews
+    const session = await auth0.getSession();
+    const currentUserId = session?.user?.sub || null;
+
+    const reviews = await getMovieReviews(movieIdNum, 20, currentUserId);
     return NextResponse.json({ success: true, reviews });
   } catch (error) {
     return NextResponse.json(
@@ -75,7 +79,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const review = await createReview(userId, body);
+    // Default is_public to true if not provided
+    const reviewInput: CreateReviewInput = {
+      ...body,
+      is_public: body.is_public ?? true,
+    };
+
+    const review = await createReview(userId, reviewInput);
 
     return NextResponse.json({ success: true, review }, { status: 201 });
   } catch (error: unknown) {

@@ -19,6 +19,7 @@ export async function createReview(
       movie_id: input.movie_id,
       rating: input.rating,
       comment: input.comment || null,
+      is_public: input.is_public ?? true, // Default to public
     })
     .select()
     .single();
@@ -38,6 +39,7 @@ export async function updateReview(
   const updateData: {
     rating?: number;
     comment?: string | null;
+    is_public?: boolean;
     updated_at: string;
   } = {
     updated_at: new Date().toISOString(),
@@ -49,6 +51,10 @@ export async function updateReview(
 
   if (input.comment !== undefined) {
     updateData.comment = input.comment || null;
+  }
+
+  if (input.is_public !== undefined) {
+    updateData.is_public = input.is_public;
   }
 
   const { data, error } = await supabaseAdmin
@@ -104,11 +110,13 @@ export async function getUserReviewForMovie(
 
 export async function getMovieReviews(
   movieId: number,
-  limit = 20
+  limit = 20,
+  requestingUserId?: string | null
 ): Promise<ReviewWithUser[]> {
   const { data, error } = await supabaseAdmin.rpc("get_movie_reviews", {
     movie_id_param: movieId,
     limit_count: limit,
+    requesting_user_id: requestingUserId || null,
   });
 
   if (error) {
@@ -160,8 +168,28 @@ export async function getAllReviewsByUser(
   return (
     data?.map((review) => ({
       ...review,
+      is_public: review.is_public ?? true,
       user_name: review.profiles?.name || "",
       user_email: review.profiles?.email || "",
     })) || []
   );
+}
+
+export async function getPrivateReviewsByUser(
+  userId: string,
+  limit = 50
+): Promise<Review[]> {
+  const { data, error } = await supabaseAdmin
+    .from("reviews")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("is_public", false)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    throw error;
+  }
+
+  return data || [];
 }

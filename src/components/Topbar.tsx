@@ -39,9 +39,9 @@ export const Topbar = ({ session }: TopbarProps) => {
       label: "Search",
     },
     {
-      href: "/wishlist",
+      href: "/wishlists",
       icon: Heart,
-      label: "Wishlist",
+      label: "Wishlists",
     },
     {
       href: "/settings",
