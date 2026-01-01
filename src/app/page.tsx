@@ -5,7 +5,6 @@ import {
   upsertProfileFromAuth0Session,
 } from "@/lib/supabase/profiles";
 import { Hero } from "@/components/homepage/Hero";
-import { TopPopularMovies } from "@/components/homepage/TopPopularMovies";
 
 export default async function HomePage() {
   const session = await auth0.getSession();

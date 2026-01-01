@@ -48,49 +48,37 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Always get movie details for reviews
+    // Fetch movie details from TMDB for all reviews
     if (reviews && reviews.length > 0) {
       const movieIds = [...new Set(reviews.map(r => r.movie_id))];
+      const moviesMap = new Map<number, { id: number; title: string; poster_path: string | null; release_date: string }>();
       
-      // Fetch movie details from database
-      const { data: movies } = await supabaseAdmin
-        .from("movies")
-        .select("id, title, poster_path, release_date")
-        .in("id", movieIds);
-
-      const moviesMap = new Map(movies?.map(m => [m.id, m]) || []);
-      
-      // Find movies not in database and fetch from TMDB
-      const missingMovieIds = movieIds.filter(id => !moviesMap.has(id));
-      
-      if (missingMovieIds.length > 0) {
-        // Fetch missing movies from TMDB in parallel
-        const tmdbPromises = missingMovieIds.map(async (id) => {
-          try {
-            const details = await getMovieDetails(id);
-            if (details) {
-              return {
-                id: details.id,
-                title: details.title,
-                poster_path: details.poster_path,
-                release_date: details.release_date,
-              };
-            }
-            return null;
-          } catch {
-            return null;
+      // Fetch all movies from TMDB in parallel
+      const tmdbPromises = movieIds.map(async (id) => {
+        try {
+          const details = await getMovieDetails(id);
+          if (details) {
+            return {
+              id: details.id,
+              title: details.title,
+              poster_path: details.poster_path,
+              release_date: details.release_date,
+            };
           }
-        });
-        
-        const tmdbResults = await Promise.all(tmdbPromises);
-        
-        // Add TMDB results to the map
-        tmdbResults.forEach(movie => {
-          if (movie) {
-            moviesMap.set(movie.id, movie);
-          }
-        });
-      }
+          return null;
+        } catch {
+          return null;
+        }
+      });
+      
+      const tmdbResults = await Promise.all(tmdbPromises);
+      
+      // Add TMDB results to the map
+      tmdbResults.forEach(movie => {
+        if (movie) {
+          moviesMap.set(movie.id, movie);
+        }
+      });
       
       const reviewsWithMovies = reviews.map(review => ({
         ...review,
