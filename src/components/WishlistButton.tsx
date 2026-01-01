@@ -30,6 +30,7 @@ export const WishlistButton = ({
       }
 
       try {
+        setLoading(true);
         // Check if movie is in any wishlist
         const response = await fetch("/api/wishlists");
         if (!response.ok) {
@@ -40,24 +41,17 @@ export const WishlistButton = ({
         const data = await response.json();
         const wishlists = data.wishlists || [];
         
-        // Check each wishlist for this movie
-        let foundInWishlist = false;
-        for (const wishlist of wishlists) {
-          const itemsResponse = await fetch(`/api/wishlists/${wishlist.id}/items`);
-          if (itemsResponse.ok) {
-            const itemsData = await itemsResponse.json();
-            const movies = itemsData.movies || [];
-            if (movies.some((m: any) => m.id === movieId)) {
-              foundInWishlist = true;
-              break;
-            }
-          }
-        }
+        // Check if movie_ids array contains this movie in any wishlist
+        const foundInWishlist = wishlists.some((wishlist: any) => 
+          wishlist.movie_ids?.includes(movieId)
+        );
         
         setIsInWishlist(foundInWishlist);
       } catch (error) {
         console.error("Failed to check wishlist status:", error);
         setIsInWishlist(false);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -69,20 +63,16 @@ export const WishlistButton = ({
       return;
     }
 
-    // If movie is not in any wishlist, open dialog to select wishlist
-    if (!isInWishlist) {
-      setDialogOpen(true);
-      return;
-    }
-
-    // If already in wishlist, we need to remove it
-    // For now, we'll just prevent removal - user should go to wishlist page to remove
-    // TODO: Add option to remove from specific wishlist
+    // Always open dialog - user can add/remove from multiple wishlists
     setDialogOpen(true);
-  }, [userId, loading, isInWishlist]);
+  }, [userId, loading]);
 
   const handleDialogSuccess = () => {
     setIsInWishlist(true);
+  };
+
+  const handleDialogRemoved = () => {
+    setIsInWishlist(false);
   };
 
   if (!userId) {
@@ -102,13 +92,14 @@ export const WishlistButton = ({
         )}
         onClick={handleWishlistToggle}
         fill={isInWishlist ? "currentColor" : "none"}
-        aria-label={isInWishlist ? "In wishlist" : "Add to wishlist"}
+        aria-label={isInWishlist ? "Manage wishlists" : "Add to wishlist"}
       />
       <SelectWishlistDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         movieId={movieId}
         onSuccess={handleDialogSuccess}
+        onRemoved={handleDialogRemoved}
       />
     </>
   );

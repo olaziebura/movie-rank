@@ -1,4 +1,4 @@
-import { getPopularMovies, getTrendingMovies } from "@/lib/tmdb/movies";
+import { getPopularMovies, getTrendingMovies, getUpcomingMovies } from "@/lib/tmdb/movies";
 import { auth0 } from "@/lib/auth/auth0";
 import {
   getProfile,
@@ -77,6 +77,39 @@ export default async function HomePage() {
     popularity: movie.popularity,
   }));
 
+  // Fetch upcoming movies for the upcoming carousel (multiple pages for better selection)
+  const upcomingPromises = [
+    getUpcomingMovies(1).catch(() => ({ results: [], total_pages: 0, total_results: 0, page: 1 })),
+    getUpcomingMovies(2).catch(() => ({ results: [], total_pages: 0, total_results: 0, page: 2 })),
+    getUpcomingMovies(3).catch(() => ({ results: [], total_pages: 0, total_results: 0, page: 3 })),
+  ];
+
+  const upcomingResponses = await Promise.all(upcomingPromises);
+  const allUpcomingMovies = upcomingResponses.flatMap(response => response.results);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Start of today
+
+  const upcomingMovies = allUpcomingMovies
+    .filter((movie) => {
+      if (!movie.release_date) return false;
+      const releaseDate = new Date(movie.release_date);
+      return releaseDate > today; // Only future releases
+    })
+    .map((movie) => ({
+      id: movie.id,
+      title: movie.title,
+      poster_path: movie.poster_path,
+      vote_average: movie.vote_average,
+      release_date: movie.release_date,
+      vote_count: movie.vote_count,
+      overview: movie.overview,
+      genres: movie.genre_ids || [],
+      popularity: movie.popularity,
+    }))
+    .sort((a, b) => (b.popularity || 0) - (a.popularity || 0)) // Sort by popularity
+    .slice(0, 10); // Take top 10 most popular
+
   return (
     <main>
       <Hero 
@@ -84,6 +117,7 @@ export default async function HomePage() {
         profile={profile} 
         popularMovies={sortedResults}
         trendingMovies={trendingMovies}
+        upcomingMovies={upcomingMovies}
       />
     </main>
   );

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { HeroWithResults } from "./HeroWithResults";
 import { TopPopularMovies } from "./TopPopularMovies";
+import { TopUpcomingMovies } from "./TopUpcomingMovies";
 import type { UserProfile } from "@/types/user";
 import type { Movie } from "@/types/movie";
 
@@ -12,6 +13,7 @@ type HeroProps = {
   profile?: UserProfile | null;
   popularMovies?: Movie[] | null;
   trendingMovies?: Movie[] | null;
+  upcomingMovies?: Movie[] | null;
 };
 
 // Pre-defined positions to avoid hydration mismatch
@@ -30,7 +32,7 @@ const PARTICLE_CONFIGS = [
   { x: 850, y: 420, duration: 19, delay: 2.8 },
 ];
 
-export const Hero = ({ session, profile, popularMovies, trendingMovies }: HeroProps = {}) => {
+export const Hero = ({ session, profile, popularMovies, trendingMovies, upcomingMovies }: HeroProps = {}) => {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -101,12 +103,23 @@ export const Hero = ({ session, profile, popularMovies, trendingMovies }: HeroPr
             </motion.div>
           )}
 
+          {/* Top 10 Upcoming Movies Carousel */}
+          {upcomingMovies && upcomingMovies.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
+              <TopUpcomingMovies movies={upcomingMovies} />
+            </motion.div>
+          )}
+
           {/* Search Bar with Filters */}
           <motion.div 
             className="w-full mx-auto mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
           >
             <HeroWithResults 
               session={session} 
