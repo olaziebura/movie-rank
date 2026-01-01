@@ -1,0 +1,31 @@
+name: Update Upcoming Movies
+
+on:
+  schedule:
+    # Runs every day at 3:00 AM UTC
+    - cron: '0 3 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  update-upcoming-movies:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Curate Upcoming Movies
+        run: |
+          curl -X POST "${{ secrets.VERCEL_URL }}/api/cron/curate-upcoming-movies" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            --fail --silent --show-error
+        env:
+          VERCEL_URL: ${{ secrets.VERCEL_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+
+      - name: Sync Movies Database
+        run: |
+          curl -X POST "${{ secrets.VERCEL_URL }}/api/cron/sync-movies" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            --fail --silent --show-error
+        env:
+          VERCEL_URL: ${{ secrets.VERCEL_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
