@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { CreateWishlistButton } from "@/components/CreateWishlistButton";
-import { Film, Loader2, FolderOpen, Trash2 } from "lucide-react";
+import { Film, Loader2, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 
 interface Wishlist {
@@ -17,19 +16,11 @@ interface Wishlist {
   movie_count?: number;
 }
 
-interface WishlistsListClientProps {
-  userId: string;
-}
-
-export function WishlistsListClient({ userId }: WishlistsListClientProps) {
+export function WishlistsListClient() {
   const [wishlists, setWishlists] = useState<Wishlist[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    fetchWishlists();
-  }, []);
-
-  const fetchWishlists = async () => {
+  const fetchWishlists = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch("/api/wishlists");
@@ -46,7 +37,11 @@ export function WishlistsListClient({ userId }: WishlistsListClientProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchWishlists();
+  }, [fetchWishlists]);
 
   // Refresh wishlists after creating a new one
   const handleWishlistCreated = () => {

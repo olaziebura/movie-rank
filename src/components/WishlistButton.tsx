@@ -42,7 +42,7 @@ export const WishlistButton = ({
         const wishlists = data.wishlists || [];
         
         // Check if movie_ids array contains this movie in any wishlist
-        const foundInWishlist = wishlists.some((wishlist: any) => 
+        const foundInWishlist = wishlists.some((wishlist: { movie_ids?: number[] }) => 
           wishlist.movie_ids?.includes(movieId)
         );
         

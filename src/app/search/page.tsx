@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SearchBar } from "@/components/SearchBar";
-import { SearchSuggestions } from "@/components/SearchSuggestions";
 import { MovieItem } from "@/components/MovieItem";
 import { HorizontalFilterPanel } from "@/components/HorizontalFilterPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,38 +22,6 @@ type SearchResult = {
   total_results: number;
   results: TMDBMovie[];
 };
-
-// Empty search state component
-function EmptySearchState() {
-  return (
-    <div className="text-center py-16">
-      <div className="mx-auto w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-6">
-        <Search className="w-12 h-12 text-blue-500" />
-      </div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-3">
-        Search for Movies
-      </h2>
-      <p className="text-gray-600 mb-8 max-w-md mx-auto">
-        Use the search bar above to find movies by title, actor, or director.
-        Discover your next favorite film from our extensive database.
-      </p>
-      <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <Button asChild>
-          <Link href="/" className="flex items-center gap-2">
-            <Film className="w-4 h-4" />
-            Browse Popular Movies
-          </Link>
-        </Button>
-        <Button variant="outline" asChild>
-          <Link href="/wishlists" className="flex items-center gap-2">
-            <Search className="w-4 h-4" />
-            View My Wishlists
-          </Link>
-        </Button>
-      </div>
-    </div>
-  );
-}
 
 // No results component
 function NoResults({ query, filters }: { query: string; filters: SearchFilters }) {
@@ -194,9 +161,6 @@ export default function SearchPage() {
     (filters.mediaType && filters.mediaType !== "movie") ||
     (filters.sortBy && filters.sortBy !== "popularity.desc")
   );
-
-  // Always show results - either from search/filters or popular movies
-  const shouldShowResults = true;
 
   // Build URL for pagination and filter updates
   const buildUrl = (newPage?: number, newFilters?: SearchFilters) => {

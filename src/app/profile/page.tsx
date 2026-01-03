@@ -53,7 +53,7 @@ export default async function ProfilePage() {
       
       if (wishlists) {
         // Count all movies across all wishlists (including duplicates)
-        wishlists.forEach((wishlist: any) => {
+        wishlists.forEach((wishlist: { movie_ids: number[] | null }) => {
           const movieIds = wishlist.movie_ids || [];
           totalMoviesInWishlists += movieIds.length;
         });

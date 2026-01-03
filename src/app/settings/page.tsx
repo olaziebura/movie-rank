@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -506,13 +506,13 @@ export default function SettingsPage() {
                   {user?.isSocialLogin ? (
                     <div className="mt-2 p-2 bg-blue-900/30 border border-blue-500/50 rounded text-xs text-blue-300">
                       <p className="font-semibold mb-1">ℹ️ Social Login Account</p>
-                      <p>You're logged in with {user.provider?.replace('-oauth2', '').replace('google', 'Google')}. 
+                      <p>You&apos;re logged in with {user.provider?.replace('-oauth2', '').replace('google', 'Google')}. 
                          Your email is managed by your {user.provider?.replace('-oauth2', '').replace('google', 'Google')} account 
                          and cannot be changed here.</p>
                     </div>
                   ) : (
                     <p className="text-xs text-neutral-400 mt-1">
-                      Your email address for notifications and account recovery. Click "Change Email" to update it.
+                      Your email address for notifications and account recovery. Click &quot;Change Email&quot; to update it.
                     </p>
                   )}
                 </div>
@@ -586,7 +586,7 @@ export default function SettingsPage() {
                         <span className="font-semibold">ℹ️ Social Login Account</span>
                       </p>
                       <p className="text-sm text-blue-200">
-                        You're logged in with {user.provider?.replace('-oauth2', '').replace('google', 'Google')}. 
+                        You&apos;re logged in with {user.provider?.replace('-oauth2', '').replace('google', 'Google')}. 
                         Your password is managed by your {user.provider?.replace('-oauth2', '').replace('google', 'Google')} account.
                       </p>
                     </div>
@@ -626,7 +626,7 @@ export default function SettingsPage() {
                               Change Your Password
                             </AlertDialogTitle>
                             <AlertDialogDescription className="text-neutral-300">
-                              We'll send a password reset link to your email address: 
+                              We&apos;ll send a password reset link to your email address: 
                               <span className="font-semibold text-white block mt-2">{email || user?.email}</span>
                               <p className="mt-3">
                                 Click the link in the email to set a new password. The link will expire in 24 hours.
@@ -663,7 +663,7 @@ export default function SettingsPage() {
                       </a>
                     </div>
                     <p className="text-xs text-neutral-400 mt-2">
-                      💡 If you don't receive an email, try the "Reset via Auth0" option above.
+                      💡 If you don&apos;t receive an email, try the &quot;Reset via Auth0&quot; option above.
                     </p>
                   </div>
                 )}

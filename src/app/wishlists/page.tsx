@@ -42,8 +42,6 @@ export default async function WishlistsPage() {
     return <LoginRequired />;
   }
 
-  const userId = session.user.sub ?? session.user.id;
-
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -63,7 +61,7 @@ export default async function WishlistsPage() {
         </div>
 
         {/* Client component that handles fetching and displaying wishlists */}
-        <WishlistsListClient userId={userId} />
+        <WishlistsListClient />
       </div>
     </div>
   );

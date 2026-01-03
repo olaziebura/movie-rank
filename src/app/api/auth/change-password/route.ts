@@ -100,7 +100,7 @@ export async function POST() {
             { status: 400 }
           );
         }
-      } catch (e) {
+      } catch {
         // Response is not JSON
       }
       

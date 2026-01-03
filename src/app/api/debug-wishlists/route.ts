@@ -1,8 +1,15 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { auth0 } from "@/lib/auth/auth0";
 import { supabaseAdmin } from "@/lib/supabase/supabaseAdmin";
 
-export async function GET(request: NextRequest) {
+interface WishlistRow {
+  id: string;
+  name: string;
+  movie_ids: number[] | null;
+  created_at: string;
+}
+
+export async function GET() {
   try {
     const session = await auth0.getSession();
     if (!session?.user) {
@@ -22,7 +29,7 @@ export async function GET(request: NextRequest) {
     }
 
     const allMovies: number[] = [];
-    const details = wishlists?.map((wishlist: any) => {
+    const details = wishlists?.map((wishlist: WishlistRow) => {
       const movieIds = wishlist.movie_ids || [];
       allMovies.push(...movieIds);
       return {
@@ -46,7 +53,8 @@ export async function GET(request: NextRequest) {
         unique_movie_ids: [...uniqueMovies]
       }
     });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

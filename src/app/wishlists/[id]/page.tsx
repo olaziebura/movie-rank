@@ -2,7 +2,6 @@ import { auth0 } from "@/lib/auth/auth0";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Film, Plus } from "lucide-react";
 import type { Metadata } from "next";
 import { WishlistMoviesClient } from "@/components/WishlistMoviesClient";
@@ -11,9 +10,7 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { id } = await params;
-  
+export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "Wishlist | MovieRank",
     description: "View and manage movies in your wishlist",
@@ -80,7 +77,7 @@ export default async function WishlistDetailPage({ params }: PageProps) {
         </div>
 
         {/* Movies List */}
-        <WishlistMoviesClient wishlistId={id} userId={userId} />
+        <WishlistMoviesClient wishlistId={id} />
       </div>
     </div>
   );

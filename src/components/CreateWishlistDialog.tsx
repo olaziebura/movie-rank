@@ -51,7 +51,7 @@ export function CreateWishlistDialog({
         throw new Error(error.message || "Failed to create wishlist");
       }
 
-      const data = await response.json();
+      await response.json();
       toast.success("Wishlist created successfully!");
       setWishlistName("");
       onOpenChange(false);
@@ -81,7 +81,7 @@ export function CreateWishlistDialog({
         <DialogHeader>
           <DialogTitle>Create new wishlist</DialogTitle>
           <DialogDescription>
-            Enter a name for your new wishlist. Click save when you're done.
+            Enter a name for your new wishlist. Click save when you&apos;re done.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">

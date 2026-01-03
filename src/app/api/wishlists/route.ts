@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth0 } from "@/lib/auth/auth0";
 import { supabaseAdmin } from "@/lib/supabase/supabaseAdmin";
 
-export async function POST(request: NextRequest) {
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     // Check authentication
     const session = await auth0.getSession();
@@ -60,7 +60,15 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+interface WishlistRow {
+  id: string;
+  name: string;
+  movie_ids: number[] | null;
+  created_at: string;
+  user_id: string;
+}
+
+export async function GET() {
   try {
     // Check authentication
     const session = await auth0.getSession();
@@ -89,7 +97,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Add movie_count to each wishlist based on movie_ids array length
-    const wishlistsWithCount = wishlists.map((wishlist: any) => ({
+    const wishlistsWithCount = wishlists.map((wishlist: WishlistRow) => ({
       ...wishlist,
       movie_count: (wishlist.movie_ids || []).length,
     }));

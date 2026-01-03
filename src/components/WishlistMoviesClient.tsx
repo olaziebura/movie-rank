@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Film, Loader2, FolderOpen, Trash2 } from "lucide-react";
@@ -11,29 +11,16 @@ import Image from "next/image";
 
 interface WishlistMoviesClientProps {
   wishlistId: string;
-  userId: string;
-}
-
-interface WishlistItem {
-  id: string;
-  movie_id: number;
-  added_at: string;
-  notes?: string;
 }
 
 export function WishlistMoviesClient({
   wishlistId,
-  userId,
 }: WishlistMoviesClientProps) {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingMovieId, setDeletingMovieId] = useState<number | null>(null);
 
-  useEffect(() => {
-    fetchWishlistMovies();
-  }, [wishlistId]);
-
-  const fetchWishlistMovies = async () => {
+  const fetchWishlistMovies = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch(`/api/wishlists/${wishlistId}/items`);
@@ -50,7 +37,11 @@ export function WishlistMoviesClient({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [wishlistId]);
+
+  useEffect(() => {
+    fetchWishlistMovies();
+  }, [fetchWishlistMovies]);
 
   const handleDeleteMovie = async (movieId: number) => {
     try {

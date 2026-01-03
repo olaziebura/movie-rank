@@ -11,21 +11,6 @@ export type Movie = {
   category?: string;
 };
 
-export type MovieRecord = {
-  id: number;
-  title: string;
-  overview: string;
-  genres: number[];
-  release_date: string;
-  poster_path: string | null;
-  vote_average: number;
-  vote_count: number;
-  popularity: number;
-  category: string;
-  created_at?: string;
-  updated_at?: string;
-};
-
 export type TMDBMovie = {
   id: number;
   title: string;
@@ -130,9 +115,4 @@ export type SearchFilters = {
     | "vote_average.asc"
     | "title.asc"
     | "title.desc";
-};
-
-export type Genre = {
-  id: number;
-  name: string;
 };

@@ -117,7 +117,7 @@ export function UserActivitySection() {
       <CardContent>
         {reviews.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-neutral-400 mb-4">You haven't reviewed any movies yet.</p>
+            <p className="text-neutral-400 mb-4">You haven&apos;t reviewed any movies yet.</p>
             <Link href="/search">
               <Button variant="outline" className="border-neutral-600 text-neutral-300 hover:bg-neutral-700">
                 Discover Movies
@@ -128,7 +128,7 @@ export function UserActivitySection() {
           <div className="space-y-4">
             <div className="flex items-center justify-between mb-4">
               <p className="text-neutral-300">
-                You've reviewed <span className="font-bold text-yellow-500">{reviews.length}</span> movie{reviews.length !== 1 ? 's' : ''}
+                You&apos;ve reviewed <span className="font-bold text-yellow-500">{reviews.length}</span> movie{reviews.length !== 1 ? 's' : ''}
               </p>
             </div>
             

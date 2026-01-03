@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { SearchBar } from "@/components/SearchBar";
 import Link from "next/link";
 import {
@@ -28,7 +27,6 @@ type NavigationLink = {
 
 export const Topbar = ({ session }: TopbarProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const router = useRouter();
 
   const isAuthenticated = !!session;
 

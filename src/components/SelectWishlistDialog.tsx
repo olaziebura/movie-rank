@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -42,13 +42,7 @@ export function SelectWishlistDialog({
   const [processingWishlistId, setProcessingWishlistId] = useState<string | null>(null);
   const [initialWishlistIds, setInitialWishlistIds] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    if (open) {
-      fetchWishlists();
-    }
-  }, [open, movieId]);
-
-  const fetchWishlists = async () => {
+  const fetchWishlists = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await fetch("/api/wishlists");
@@ -75,7 +69,13 @@ export function SelectWishlistDialog({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [movieId]);
+
+  useEffect(() => {
+    if (open) {
+      fetchWishlists();
+    }
+  }, [open, fetchWishlists]);
 
   const isMovieInWishlist = (wishlist: Wishlist): boolean => {
     return wishlist.movie_ids?.includes(movieId) || false;

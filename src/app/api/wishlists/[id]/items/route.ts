@@ -47,7 +47,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         release_date: movieDetail.release_date,
         vote_count: movieDetail.vote_count,
         overview: movieDetail.overview,
-        genres: movieDetail.genres.map((g: any) => g.id),
+        genres: movieDetail.genres.map((g: { id: number }) => g.id),
         popularity: movieDetail.popularity,
       }));
 
