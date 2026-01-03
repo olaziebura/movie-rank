@@ -96,7 +96,7 @@ export const Topbar = ({ session }: TopbarProps) => {
             {/* Logo/Brand */}
             <div className="flex items-center gap-8">
               <Link href="/" className="text-xl font-bold hover:text-neutral-600">
-                MovieRank
+                MovieVote
               </Link>
 
               {/* Desktop Navigation Links */}

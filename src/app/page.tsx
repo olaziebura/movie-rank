@@ -89,11 +89,19 @@ export default async function HomePage() {
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Start of today
 
-  const upcomingMovies = allUpcomingMovies
+  // Remove duplicates from upcoming movies
+  const uniqueUpcomingMap = new Map();
+  allUpcomingMovies.forEach(movie => {
+    if (!uniqueUpcomingMap.has(movie.id)) {
+      uniqueUpcomingMap.set(movie.id, movie);
+    }
+  });
+
+  const upcomingMovies = Array.from(uniqueUpcomingMap.values())
     .filter((movie) => {
       if (!movie.release_date) return false;
       const releaseDate = new Date(movie.release_date);
-      return releaseDate > today; // Only future releases
+      return releaseDate >= today; // Include today and future releases
     })
     .map((movie) => ({
       id: movie.id,

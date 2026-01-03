@@ -256,8 +256,8 @@ export function TopUpcomingMovies({ movies }: TopUpcomingMoviesProps) {
                       {index + 1}
                     </div>
 
-                    {/* Mobile/Tablet: Always visible info (< lg) */}
-                    <div className="lg:hidden absolute bottom-0 inset-x-0 bg-black/85 backdrop-blur-sm p-3">
+                    {/* Mobile/Tablet: Always visible info (< md) */}
+                    <div className="md:hidden absolute bottom-0 inset-x-0 bg-black/85 backdrop-blur-sm p-3">
                       <h3 className="text-white font-bold text-base mb-2 line-clamp-2">
                         {movie.title}
                       </h3>
@@ -288,8 +288,8 @@ export function TopUpcomingMovies({ movies }: TopUpcomingMoviesProps) {
                       )}
                     </div>
 
-                    {/* Desktop: Hover overlay (>= lg: ≥992px) */}
-                    <div className="hidden lg:block absolute inset-0 bg-black/80 opacity-0 transition-opacity duration-300 flex flex-col justify-center p-4 lg:group-hover:opacity-100">
+                    {/* Desktop: Hover overlay (>= md: ≥1024px) */}
+                    <div className="hidden md:block absolute inset-0 bg-black/80 opacity-0 transition-opacity duration-300 flex flex-col justify-center p-4 md:group-hover:opacity-100">
                       <h3 className="text-white font-bold text-xl mb-3 line-clamp-2">
                         {movie.title}
                       </h3>

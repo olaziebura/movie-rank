@@ -27,8 +27,19 @@ export async function getNowPlayingMovies(page = 1): Promise<TMDBResponse> {
 }
 
 export async function getUpcomingMovies(page = 1): Promise<TMDBResponse> {
-  return tmdbFetch(TMDB_CONFIG.ENDPOINTS.UPCOMING, {
+  // Get movies releasing from today up to 3 months in the future
+  const today = new Date();
+  const threeMonthsLater = new Date(today);
+  threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3);
+  
+  const fromDate = today.toISOString().split('T')[0];
+  const toDate = threeMonthsLater.toISOString().split('T')[0];
+  
+  return tmdbFetch(TMDB_CONFIG.ENDPOINTS.DISCOVER_MOVIE, {
     page,
+    'primary_release_date.gte': fromDate,
+    'primary_release_date.lte': toDate,
+    sort_by: 'popularity.desc',
   }) as Promise<TMDBResponse>;
 }
 
